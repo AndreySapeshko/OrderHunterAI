@@ -41,11 +41,11 @@ jobs:
 
       - name: Run black
         run: |
-          poetry run black --check app
+          poetry run black --check backend
 
       - name: Run flake8
         run: |
-          poetry run flake8 app
+          poetry run flake8 backend
             - name: Run flake8
 
   test:
