@@ -10,6 +10,7 @@ celery_app = Celery(
     backend=f"redis://:{REDIS_PASSWORD}@redis:6379/1",
 )
 
+
 @celery_app.task
-def ping():
+def ping() -> str:
     return "pong"
