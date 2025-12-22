@@ -1,0 +1,54 @@
+import asyncio
+
+import pytest
+import pytest_asyncio
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+from backend.app.config import POSTGRES_PASSWORD, POSTGRES_USER
+from backend.app.db.base import Base
+
+TEST_DATABASE_URL = f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:5432/test_db"
+
+
+@pytest.fixture(scope="session")
+def event_loop():
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
+
+
+@pytest_asyncio.fixture
+async def engine():
+    engine = create_async_engine(TEST_DATABASE_URL, echo=False)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+    yield engine
+    await engine.dispose()
+
+
+@pytest_asyncio.fixture
+async def sessionmaker(engine):
+    return async_sessionmaker(
+        bind=engine,
+        expire_on_commit=False,
+    )
+
+
+@pytest_asyncio.fixture
+async def session(sessionmaker) -> AsyncSession:
+    async_session = sessionmaker
+    async with async_session() as session:
+        async with session.begin():
+            yield session
+
+
+# @pytest.fixture(autouse=True)
+# async def prepare_database():
+#     """
+#     Clean database before each test.
+#     """
+#     async with engine.begin() as conn:
+#         await conn.run_sync(Base.metadata.drop_all)
+#         await conn.run_sync(Base.metadata.create_all)
+#     yield
