@@ -12,7 +12,6 @@ class LeadAI(Base):
     lead_id = Column(UUID, ForeignKey("leads.id"), primary_key=True)
 
     is_relevant = Column(Boolean, index=True)
-    relevance_reason = Column(String)
     category = Column(String, index=True)
 
     extracted = Column(JSONB)

@@ -3,6 +3,7 @@ from datetime import datetime
 
 from sqlalchemy import UUID, Column, DateTime, String, Text
 
+from backend.app.core.enums import LeadStatus
 from backend.app.db.base import Base
 
 
@@ -13,5 +14,5 @@ class Lead(Base):
     title = Column(Text)
     description = Column(Text)
 
-    status = Column(String, default="new")
+    status = Column(String, default=LeadStatus.NEW, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)

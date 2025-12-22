@@ -1,4 +1,5 @@
 import asyncio
+from types import SimpleNamespace
 
 import pytest
 import pytest_asyncio
@@ -53,12 +54,23 @@ async def sample_lead(session):
     return lead
 
 
-# @pytest.fixture(autouse=True)
-# async def prepare_database():
-#     """
-#     Clean database before each test.
-#     """
-#     async with engine.begin() as conn:
-#         await conn.run_sync(Base.metadata.drop_all)
-#         await conn.run_sync(Base.metadata.create_all)
-#     yield
+@pytest.fixture
+def lead():
+    return SimpleNamespace(
+        title="AI chatbot for customer support", description="Need an AI chatbot using GPT for support automation"
+    )
+
+
+@pytest.fixture
+def lead_ai_good():
+    return SimpleNamespace(score=85, category="chatbot")
+
+
+@pytest.fixture
+def lead_ai_bad_score():
+    return SimpleNamespace(score=40, category="chatbot")
+
+
+@pytest.fixture
+def lead_ai_wrong_category():
+    return SimpleNamespace(score=90, category="analytics")

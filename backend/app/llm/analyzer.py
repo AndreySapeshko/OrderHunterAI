@@ -25,15 +25,22 @@ class LeadAnalyzer:
         except ValidationError:
             logger.exception("Analyzer failed")
             raise
+        extracted = parsed.model_dump(
+            exclude={
+                "is_relevant",
+                "category",
+                "score",
+            }
+        )
+        ai = LeadAI(
+            lead_id=lead.id,
+            is_relevant=parsed.is_relevant,
+            category=parsed.category,
+            extracted=extracted,
+            score=parsed.score,
+            model=self.model,
+            prompt_version=self.prompt_version,
+        )
 
         async with async_session.begin() as session:
-            ai = LeadAI(
-                lead_id=lead.id,
-                is_relevant=parsed.is_relevant,
-                category=parsed.category,
-                extracted=parsed.model_dump(),
-                score=parsed.score,
-                model=self.model,
-                prompt_version=self.prompt_version,
-            )
             await session.merge(ai)
