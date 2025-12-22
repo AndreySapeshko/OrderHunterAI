@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from backend.app.config import POSTGRES_PASSWORD, POSTGRES_USER
 from backend.app.db.base import Base
+from backend.app.db.models.leads import Lead
 
 TEST_DATABASE_URL = f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:5432/test_db"
 
@@ -27,8 +28,8 @@ async def engine():
     await engine.dispose()
 
 
-@pytest_asyncio.fixture
-async def sessionmaker(engine):
+@pytest.fixture
+def sessionmaker(engine):
     return async_sessionmaker(
         bind=engine,
         expire_on_commit=False,
@@ -41,6 +42,15 @@ async def session(sessionmaker) -> AsyncSession:
     async with async_session() as session:
         async with session.begin():
             yield session
+
+
+@pytest.fixture
+async def sample_lead(session):
+    lead = Lead(title="AI chatbot for support", description="Need an AI chatbot using GPT for customer support")
+    session.add(lead)
+    await session.commit()
+    await session.refresh(lead)
+    return lead
 
 
 # @pytest.fixture(autouse=True)
