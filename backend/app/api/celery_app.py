@@ -1,3 +1,9 @@
+import logging.config
+
+from backend.app.logging_config import LOGGING_CONFIG
+
+logging.config.dictConfig(LOGGING_CONFIG)
+
 import os
 
 from celery import Celery
