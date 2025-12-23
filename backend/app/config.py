@@ -6,7 +6,7 @@ load_dotenv()
 
 OPEN_AI_KEY = os.environ.get("OPEN_AI_KEY", default="my_api_key")
 
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", default="my_bot_token")
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", default="8578774376:AAEqM6QDggL")
 
 POSTGRES_DB = os.environ.get("POSTGRES_DB", default="my_database_name")
 POSTGRES_USER = os.environ.get("POSTGRES_USER", default="my_username")
