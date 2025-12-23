@@ -1,5 +1,5 @@
 import pytest
-from pydantic import ValidationError
+
 from sqlalchemy import select
 
 from backend.app.db.models.lead_ai import LeadAI
@@ -134,5 +134,4 @@ async def test_lead_analyzer_invalid_json(session, sessionmaker, monkeypatch):
     session.add(lead)
     await session.commit()
 
-    with pytest.raises(ValidationError):
-        await analyzer.analyze(lead)
+    assert await analyzer.analyze(lead) is False

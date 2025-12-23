@@ -15,4 +15,4 @@ RUN poetry config virtualenvs.create false \
 
 COPY backend/app/bot ./app/bot
 
-CMD ["python", "app/bot/main.py"]
+CMD ["python", "app/bot/bot.py"]

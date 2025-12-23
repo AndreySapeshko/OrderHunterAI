@@ -1,8 +1,10 @@
 import asyncio
 from types import SimpleNamespace
+from uuid import uuid4
 
 import pytest
 import pytest_asyncio
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from backend.app.config import POSTGRES_PASSWORD, POSTGRES_USER
@@ -23,7 +25,8 @@ def event_loop():
 async def engine():
     engine = create_async_engine(TEST_DATABASE_URL, echo=False)
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        await conn.execute(text("DROP SCHEMA public CASCADE"))
+        await conn.execute(text("CREATE SCHEMA public"))
         await conn.run_sync(Base.metadata.create_all)
     yield engine
     await engine.dispose()
@@ -54,11 +57,11 @@ async def sample_lead(session):
     return lead
 
 
-@pytest.fixture
-def lead():
-    return SimpleNamespace(
-        title="AI chatbot for customer support", description="Need an AI chatbot using GPT for support automation"
-    )
+# @pytest.fixture
+# def lead():
+#     return SimpleNamespace(
+#         title="AI chatbot for customer support", description="Need an AI chatbot using GPT for support automation"
+#     )
 
 
 @pytest.fixture
@@ -74,3 +77,28 @@ def lead_ai_bad_score():
 @pytest.fixture
 def lead_ai_wrong_category():
     return SimpleNamespace(score=90, category="analytics")
+
+
+@pytest.fixture
+def lead():
+    return SimpleNamespace(id=uuid4(), title="AI chatbot", description="Need AI chatbot for support")
+
+
+@pytest.fixture
+def lead_ai_relevant():
+    return SimpleNamespace(is_relevant=True, score=80, category="chatbot")
+
+
+@pytest.fixture
+def lead_ai_not_relevant():
+    return SimpleNamespace(is_relevant=False, score=10, category="not_ai")
+
+
+@pytest.fixture
+def user():
+    return SimpleNamespace(id=uuid4(), chat_id=123456, is_active=True)
+
+
+@pytest.fixture
+def rule():
+    return SimpleNamespace(enabled=True)

@@ -16,15 +16,18 @@ class LeadAnalyzer:
         self.model = llm_client.model
         self.prompt_version = prompt_version
 
-    async def analyze(self, lead):
+    async def analyze(self, lead) -> bool:
         prompt = render_messages(lead.description)
-        raw = await self.llm.analyze(prompt)
 
         try:
+            raw = await self.llm.analyze(prompt)
             parsed = LLMLeadResult.model_validate(raw)
         except ValidationError:
-            logger.exception("Analyzer failed")
-            raise
+            logger.exception("LLM response validation failed")
+            return False
+        except Exception:
+            logger.exception("LLM call failed")
+            return False
         extracted = parsed.model_dump(
             exclude={
                 "is_relevant",
@@ -44,3 +47,4 @@ class LeadAnalyzer:
 
         async with async_session.begin() as session:
             await session.merge(ai)
+        return True
