@@ -1,4 +1,5 @@
 from sqlalchemy import UUID, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.db.models.lead_ai import LeadAI
 from backend.app.db.models.lead_notification import LeadNotification
@@ -63,3 +64,28 @@ async def create_lead_notification(lead_id: UUID, user_id: UUID):
         session.add(lead_notification)
         await session.commit()
     return lead_notification
+
+
+async def get_or_create_user(
+    session: AsyncSession,
+    telegram_id: int,
+    username: str | None,
+) -> User:
+    stmt = select(User).where(User.chat_id == telegram_id)
+    user = (await session.scalars(stmt)).one_or_none()
+
+    if user:
+        # обновляем username, если изменился
+        if user.username != username:
+            user.username = username
+        return user
+
+    # создаём нового пользователя
+    user = User(
+        chat_id=telegram_id,
+        username=username,
+    )
+    session.add(user)
+    await session.flush()
+
+    return user

@@ -1,0 +1,92 @@
+from fastapi import APIRouter, Query, HTTPException
+from typing import Optional, List
+from uuid import UUID
+from fastapi import HTTPException
+from sqlalchemy import select
+
+from backend.app.api.schemas.lead import LeadOut
+from backend.app.db.session import async_session
+from backend.app.db.models.leads import Lead
+from backend.app.db.models.lead_ai import LeadAI
+from backend.app.api.schemas.lead import LeadStatusUpdate
+
+router = APIRouter()
+
+
+@router.get("/", response_model=List[LeadOut])
+async def list_leads(
+    status: Optional[str] = Query(None),
+    min_score: Optional[int] = Query(None),
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+):
+    async with async_session() as session:
+        stmt = (
+            select(Lead, LeadAI)
+            .outerjoin(LeadAI, LeadAI.lead_id == Lead.id)
+            .order_by(Lead.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+
+        if status:
+            stmt = stmt.where(Lead.status == status)
+
+        if min_score is not None:
+            stmt = stmt.where(LeadAI.score >= min_score)
+
+        result = await session.execute(stmt)
+
+    items = []
+    for lead, lead_ai in result:
+        items.append(
+            LeadOut.from_orm(lead, lead_ai)
+        )
+
+    return items
+
+
+@router.get("/{lead_id}", response_model=LeadOut)
+async def get_lead(lead_id: UUID):
+    async with async_session() as session:
+        stmt = (
+            select(Lead, LeadAI)
+            .outerjoin(LeadAI, LeadAI.lead_id == Lead.id)
+            .where(Lead.id == lead_id)
+        )
+
+        result = await session.execute(stmt)
+        row = result.first()
+
+    if not row:
+        raise HTTPException(status_code=404, detail="Lead not found")
+
+    lead, lead_ai = row
+    return LeadOut.from_orm(lead, lead_ai)
+
+
+@router.patch("/{lead_id}/status", response_model=LeadOut)
+async def update_lead_status(
+    lead_id: UUID,
+    payload: LeadStatusUpdate,
+):
+    async with async_session() as session:
+        lead = await session.get(Lead, lead_id)
+
+        if not lead:
+            raise HTTPException(status_code=404, detail="Lead not found")
+
+        lead.status = payload.status
+        await session.commit()
+        await session.refresh(lead)
+
+        # подтягиваем AI-данные
+        stmt = (
+            select(Lead, LeadAI)
+            .outerjoin(LeadAI, LeadAI.lead_id == Lead.id)
+            .where(Lead.id == lead_id)
+        )
+        result = await session.execute(stmt)
+        lead, lead_ai = result.first()
+
+    return LeadOut.from_orm(lead, lead_ai)

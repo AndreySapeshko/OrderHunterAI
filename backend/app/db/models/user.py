@@ -13,4 +13,4 @@ class User(Base):
     username = Column(String, nullable=True)
     is_active = Column(Boolean, index=True, default=True)
     password = Column(String, unique=True)
-    email = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=True)

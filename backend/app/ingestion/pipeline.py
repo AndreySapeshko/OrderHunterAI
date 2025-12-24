@@ -5,6 +5,7 @@ from backend.app.db.models.leads import Lead
 from backend.app.db.models.raw_items import RawItem
 from backend.app.db.session import async_session
 from backend.app.ingestion.dedup import compute_content_hash
+from backend.app.llm.services import process_new_lead
 
 
 class IngestionPipeline:
@@ -57,6 +58,8 @@ class IngestionPipeline:
             )
             session.add(lead)
             await session.flush()
+
+            await process_new_lead(lead.id)
 
             # 4. link
             session.add(

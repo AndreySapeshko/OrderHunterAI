@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import UUID, Column, DateTime, String, Text
+from sqlalchemy import UUID, Column, DateTime, String, Text, func
 
 from backend.app.db.base import Base
 
@@ -16,7 +16,7 @@ class RawItem(Base):
     title = Column(Text)
     content = Column(Text)
     author = Column(String, nullable=True)
-    published_at = Column(DateTime, nullable=True)
+    published_at = Column(DateTime(timezone=True), nullable=True)
 
     content_hash = Column(String, index=True)
-    fetched_at = Column(DateTime, default=datetime.utcnow)
+    fetched_at = Column(DateTime(timezone=True), server_default=func.now())
