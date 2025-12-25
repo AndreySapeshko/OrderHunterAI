@@ -52,7 +52,7 @@ async def session(sessionmaker) -> AsyncSession:
 async def sample_lead(session):
     lead = Lead(title="AI chatbot for support", description="Need an AI chatbot using GPT for customer support")
     session.add(lead)
-    await session.commit()
+    await session.flush()
     await session.refresh(lead)
     return lead
 

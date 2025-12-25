@@ -26,14 +26,14 @@ scheduler.add_listener(
 
 
 def setup_scheduler():
-    scheduler.add_job(
-        run_all_sources,
-        IntervalTrigger(minutes=15),
-        id="run_sources_ingestion",
-        replace_existing=True,
-        max_instances=1,
-        coalesce=True,
-    )
+    # scheduler.add_job(
+    #     run_all_sources,
+    #     IntervalTrigger(minutes=15),
+    #     id="run_sources_ingestion",
+    #     replace_existing=True,
+    #     max_instances=1,
+    #     coalesce=True,
+    # )
 
     scheduler.add_job(
         lambda: logger.info("SCHEDULER TEST JOB EXECUTED"),

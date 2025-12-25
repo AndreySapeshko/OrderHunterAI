@@ -1,5 +1,6 @@
 import asyncio
 
+from backend.app.bot.bot import bot
 from backend.app.bot.services.notifier import notify_lead
 from backend.app.db import Lead, LeadAI
 from backend.app.db.crud import get_all_active_users_with_rules, get_notified_user_ids, create_lead_notification

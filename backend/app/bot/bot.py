@@ -9,7 +9,7 @@ from backend.app.bot.handlers.start import router as start
 
 logger = logging.getLogger(__name__)
 
-bot = Bot("8271265533:AAElBGmpX8YXNqFMr7ojNKA_kMCnNs1W3sI")
+bot = Bot(TELEGRAM_BOT_TOKEN)
 dp = Dispatcher()
 
 routers = [

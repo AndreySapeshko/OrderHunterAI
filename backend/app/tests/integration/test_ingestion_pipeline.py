@@ -1,3 +1,5 @@
+from unittest.mock import patch, AsyncMock
+
 import pytest
 from sqlalchemy import func, select
 
@@ -12,15 +14,20 @@ from backend.app.sources.state import SourceState
 async def test_ingestion_idempotent(session, sessionmaker, monkeypatch):
     monkeypatch.setattr("backend.app.ingestion.pipeline.async_session", sessionmaker)
     monkeypatch.setattr("backend.app.sources.state.async_session", sessionmaker)
-    state = SourceState()
-    connector = DummySourceConnector(state=state)
-    pipeline = IngestionPipeline(connector)
+    monkeypatch.setattr("backend.app.llm.analyzer.async_session", sessionmaker)
+    monkeypatch.setattr("backend.app.db.crud.async_session", sessionmaker)
+    with(
+        patch("backend.app.ingestion.pipeline.process_new_lead", new_callable=AsyncMock),
+    ):
+        state = SourceState()
+        connector = DummySourceConnector(state=state)
+        pipeline = IngestionPipeline(connector)
 
-    await pipeline.run()
-    await pipeline.run()  # повтор
+        await pipeline.run()
+        await pipeline.run()  # повтор
 
-    raw_count = await session.scalar(select(func.count()).select_from(RawItem))
-    lead_count = await session.scalar(select(func.count()).select_from(Lead))
+        raw_count = await session.scalar(select(func.count()).select_from(RawItem))
+        lead_count = await session.scalar(select(func.count()).select_from(Lead))
 
-    assert raw_count == 1
-    assert lead_count == 1
+        assert raw_count == 1
+        assert lead_count == 1
