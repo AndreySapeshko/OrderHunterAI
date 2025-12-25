@@ -27,9 +27,7 @@ celery_app.conf.beat_schedule = {
     },
 }
 
-celery_app.autodiscover_tasks([
-    "backend.app.workers"
-])
+celery_app.autodiscover_tasks(["backend.app.workers"])
 
 
 @celery_app.task

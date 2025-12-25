@@ -1,7 +1,7 @@
 import random
+from datetime import datetime, timezone
 
 import httpx
-from datetime import datetime, timezone
 
 from backend.app.sources.base import BaseSourceConnector
 from backend.app.sources.types import RawSourceItem
@@ -22,10 +22,7 @@ class RedditForHireConnector(BaseSourceConnector):
 
         headers = {
             "User-Agent": random.choice(USER_AGENTS),
-            "Accept": (
-                "text/html,application/xhtml+xml,application/xml;"
-                "q=0.9,image/avif,image/webp,*/*;q=0.8"
-            ),
+            "Accept": ("text/html,application/xhtml+xml,application/xml;" "q=0.9,image/avif,image/webp,*/*;q=0.8"),
             "Accept-Language": "en-US,en;q=0.9",
             "Connection": "keep-alive",
         }
@@ -52,9 +49,7 @@ class RedditForHireConnector(BaseSourceConnector):
                 title=p["title"],
                 content=p.get("selftext", ""),
                 author=p.get("author"),
-                published_at=datetime.fromtimestamp(
-                    p["created_utc"], tz=timezone.utc
-                ),
+                published_at=datetime.fromtimestamp(p["created_utc"], tz=timezone.utc),
                 metadata={
                     "subreddit": p.get("subreddit"),
                     "score": p.get("score"),

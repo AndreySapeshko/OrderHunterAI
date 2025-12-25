@@ -1,8 +1,8 @@
 import asyncio
 
+import backend.app.db.__init__
 from backend.app.db.base import Base
 from backend.app.db.session import engine
-import backend.app.db.__init__
 
 
 async def init_models():

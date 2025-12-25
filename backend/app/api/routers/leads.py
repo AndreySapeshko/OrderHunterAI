@@ -1,14 +1,13 @@
-from fastapi import APIRouter, Query, HTTPException
-from typing import Optional, List
+from typing import List, Optional
 from uuid import UUID
-from fastapi import HTTPException
+
+from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import select
 
-from backend.app.api.schemas.lead import LeadOut
-from backend.app.db.session import async_session
-from backend.app.db.models.leads import Lead
+from backend.app.api.schemas.lead import LeadOut, LeadStatusUpdate
 from backend.app.db.models.lead_ai import LeadAI
-from backend.app.api.schemas.lead import LeadStatusUpdate
+from backend.app.db.models.leads import Lead
+from backend.app.db.session import async_session
 
 router = APIRouter()
 
@@ -39,9 +38,7 @@ async def list_leads(
 
     items = []
     for lead, lead_ai in result:
-        items.append(
-            LeadOut.from_orm(lead, lead_ai)
-        )
+        items.append(LeadOut.from_orm(lead, lead_ai))
 
     return items
 
@@ -49,11 +46,7 @@ async def list_leads(
 @router.get("/{lead_id}", response_model=LeadOut)
 async def get_lead(lead_id: UUID):
     async with async_session() as session:
-        stmt = (
-            select(Lead, LeadAI)
-            .outerjoin(LeadAI, LeadAI.lead_id == Lead.id)
-            .where(Lead.id == lead_id)
-        )
+        stmt = select(Lead, LeadAI).outerjoin(LeadAI, LeadAI.lead_id == Lead.id).where(Lead.id == lead_id)
 
         result = await session.execute(stmt)
         row = result.first()
@@ -81,11 +74,7 @@ async def update_lead_status(
         await session.refresh(lead)
 
         # подтягиваем AI-данные
-        stmt = (
-            select(Lead, LeadAI)
-            .outerjoin(LeadAI, LeadAI.lead_id == Lead.id)
-            .where(Lead.id == lead_id)
-        )
+        stmt = select(Lead, LeadAI).outerjoin(LeadAI, LeadAI.lead_id == Lead.id).where(Lead.id == lead_id)
         result = await session.execute(stmt)
         lead, lead_ai = result.first()
 

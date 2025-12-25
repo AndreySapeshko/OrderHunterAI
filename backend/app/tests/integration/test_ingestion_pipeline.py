@@ -1,4 +1,4 @@
-from unittest.mock import patch, AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from sqlalchemy import func, select
@@ -16,9 +16,7 @@ async def test_ingestion_idempotent(session, sessionmaker, monkeypatch):
     monkeypatch.setattr("backend.app.sources.state.async_session", sessionmaker)
     monkeypatch.setattr("backend.app.llm.analyzer.async_session", sessionmaker)
     monkeypatch.setattr("backend.app.db.crud.async_session", sessionmaker)
-    with(
-        patch("backend.app.ingestion.pipeline.process_new_lead", new_callable=AsyncMock),
-    ):
+    with (patch("backend.app.ingestion.pipeline.process_new_lead", new_callable=AsyncMock),):
         state = SourceState()
         connector = DummySourceConnector(state=state)
         pipeline = IngestionPipeline(connector)

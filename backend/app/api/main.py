@@ -12,10 +12,13 @@ logger = logging.getLogger(__name__)
 
 from fastapi import FastAPI
 
-from backend.app.api.scheduler import setup_scheduler, scheduler
 import backend.app.sources.connectors.registry_connectors
+from backend.app.api.scheduler import scheduler, setup_scheduler
 
-logger.info("Registered sources: %s",SourceRegistry.list_sources(),)
+logger.info(
+    "Registered sources: %s",
+    SourceRegistry.list_sources(),
+)
 
 app = FastAPI(
     title="Order hunter AI",

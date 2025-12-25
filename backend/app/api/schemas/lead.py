@@ -1,7 +1,8 @@
-from pydantic import BaseModel
+from datetime import datetime
 from typing import Optional
 from uuid import UUID
-from datetime import datetime
+
+from pydantic import BaseModel
 
 from backend.app.core.enums import LeadStatus
 
@@ -11,6 +12,7 @@ class LeadAIOut(BaseModel):
     category: str
     score: int
     extracted: dict
+
 
 class LeadOut(BaseModel):
     id: UUID
@@ -29,12 +31,16 @@ class LeadOut(BaseModel):
             description=lead.description,
             status=lead.status,
             created_at=lead.created_at,
-            ai=LeadAIOut(
-                is_relevant=lead_ai.is_relevant,
-                category=lead_ai.category,
-                score=lead_ai.score,
-                extracted=lead_ai.extracted,
-            ) if lead_ai else None,
+            ai=(
+                LeadAIOut(
+                    is_relevant=lead_ai.is_relevant,
+                    category=lead_ai.category,
+                    score=lead_ai.score,
+                    extracted=lead_ai.extracted,
+                )
+                if lead_ai
+                else None
+            ),
         )
 
 

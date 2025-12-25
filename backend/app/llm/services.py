@@ -1,7 +1,7 @@
 from sqlalchemy import UUID
 
 from backend.app.bot.services.sender import notification_sender
-from backend.app.db.crud import load_lead, get_lead_ai
+from backend.app.db.crud import get_lead_ai, load_lead
 from backend.app.llm.analyzer import LeadAnalyzer
 from backend.app.llm.openai_client import get_llm_client
 

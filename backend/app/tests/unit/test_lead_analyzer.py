@@ -1,5 +1,4 @@
 import pytest
-
 from sqlalchemy import select
 
 from backend.app.db.models.lead_ai import LeadAI

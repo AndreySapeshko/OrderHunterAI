@@ -1,10 +1,8 @@
+from datetime import datetime, timezone
 from types import SimpleNamespace
-from uuid import uuid4
+from unittest.mock import AsyncMock
 
 import pytest
-
-from datetime import datetime, timezone
-from unittest.mock import AsyncMock
 
 from backend.app.ingestion.pipeline import IngestionPipeline
 

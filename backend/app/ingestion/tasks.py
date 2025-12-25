@@ -7,7 +7,6 @@ from backend.app.sources.state import SourceState
 logger = logging.getLogger(__name__)
 
 
-
 async def run_source_ingestion(source_id: str):
     state = SourceState()
     connector_cls = SourceRegistry.get(source_id)

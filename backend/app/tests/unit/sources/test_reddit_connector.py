@@ -1,5 +1,6 @@
-import pytest
 from datetime import datetime, timezone
+
+import pytest
 
 from backend.app.sources.connectors.reddit_forhire import RedditForHireConnector
 from backend.app.sources.state import SourceState
@@ -46,6 +47,4 @@ async def test_reddit_connector_parses_items(mocker):
 
     assert item.external_id == "abc123"
     assert "AI chatbot" in item.title
-    assert item.published_at == datetime.fromtimestamp(
-        1700000000, tz=timezone.utc
-    )
+    assert item.published_at == datetime.fromtimestamp(1700000000, tz=timezone.utc)

@@ -1,23 +1,24 @@
 import logging
+from datetime import datetime, timedelta, timezone
 
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.interval import IntervalTrigger
-from datetime import datetime, timezone, timedelta
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED
-
-from backend.app.ingestion.tasks import run_all_sources
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+# from apscheduler.triggers.interval import IntervalTrigger
+#
+# from backend.app.ingestion.tasks import run_all_sources
 
 logger = logging.getLogger(__name__)
 
 
 scheduler = AsyncIOScheduler()
+
+
 def job_listener(event):
     if event.exception:
-        logger.exception(
-            "Job %s failed", event.job_id, exc_info=event.exception
-        )
+        logger.exception("Job %s failed", event.job_id, exc_info=event.exception)
     else:
         logger.info("Job %s executed successfully", event.job_id)
+
 
 scheduler.add_listener(
     job_listener,
