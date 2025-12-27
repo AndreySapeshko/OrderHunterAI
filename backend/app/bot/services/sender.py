@@ -18,7 +18,7 @@ async def notification_sender(lead: Lead, lead_ai: LeadAI):
         rules = item["rules"]
         engine = RuleEngine(rules)
 
-        if engine.match(lead, lead_ai) and user.id not in notified_user_ids:
+        if user and engine.match(lead, lead_ai) and user.id not in notified_user_ids:
             await create_lead_notification(lead_id=lead.id, user_id=user.id)
             tasks.append(notify_lead(bot, user.chat_id, lead, lead_ai))
 

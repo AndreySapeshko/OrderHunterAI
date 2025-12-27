@@ -3,10 +3,9 @@ from datetime import datetime, timedelta, timezone
 
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.interval import IntervalTrigger
 
-# from apscheduler.triggers.interval import IntervalTrigger
-#
-# from backend.app.ingestion.tasks import run_all_sources
+from backend.app.ingestion.tasks import run_all_sources
 
 logger = logging.getLogger(__name__)
 
@@ -28,19 +27,22 @@ scheduler.add_listener(
 
 
 def setup_scheduler():
-    # scheduler.add_job(
-    #     run_all_sources,
-    #     IntervalTrigger(minutes=15),
-    #     id="run_sources_ingestion",
-    #     replace_existing=True,
-    #     max_instances=1,
-    #     coalesce=True,
-    # )
+    scheduler.add_job(
+        run_all_sources,
+        IntervalTrigger(minutes=15),
+        id="run_sources_ingestion",
+        replace_existing=True,
+        max_instances=1,
+        coalesce=True,
+    )
 
     scheduler.add_job(
-        lambda: logger.info("SCHEDULER TEST JOB EXECUTED"),
+        run_all_sources,
+        id="run_sources_ingestion_now",
         trigger="date",
         run_date=datetime.now(tz=timezone.utc) + timedelta(seconds=5),
+        max_instances=1,
+        coalesce=True,
     )
 
     scheduler.add_listener(

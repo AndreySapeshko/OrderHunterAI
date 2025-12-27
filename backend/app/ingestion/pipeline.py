@@ -1,11 +1,17 @@
+import logging
+from datetime import datetime
+
 from sqlalchemy import select
 
+from backend.app.db.crud import get_limited_to
 from backend.app.db.models.lead_source_links import LeadSourceLink
 from backend.app.db.models.leads import Lead
 from backend.app.db.models.raw_items import RawItem
 from backend.app.db.session import async_session
 from backend.app.ingestion.dedup import compute_content_hash
 from backend.app.llm.services import process_new_lead
+
+logger = logging.getLogger(__name__)
 
 
 class IngestionPipeline:
@@ -59,8 +65,6 @@ class IngestionPipeline:
             session.add(lead)
             await session.flush()
 
-            await process_new_lead(lead.id)
-
             # 4. link
             session.add(
                 LeadSourceLink(
@@ -70,3 +74,14 @@ class IngestionPipeline:
             )
 
             await session.commit()
+
+            if not lead.description:
+                logger.warning("Lead %s has empty description", lead.id)
+                return
+
+            disabled_until = await get_limited_to("disable_llm")
+            if disabled_until and disabled_until > datetime.utcnow():
+                logger.warning("LLM disabled, skipping analysis")
+                return
+
+            await process_new_lead(lead.id)

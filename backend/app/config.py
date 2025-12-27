@@ -20,3 +20,5 @@ DATABASE_URL = (
 DATABASE_URL_SYNC = (
     f"postgresql+psycopg://{POSTGRES_USER}:" f"{POSTGRES_PASSWORD}@{POSTGRES_HOST}:" f"{POSTGRES_PORT}/{POSTGRES_DB}"
 )
+
+ENABLE_LLM_ANALYSIS = os.environ.get("ENABLE_LLM_ANALYSIS", default="True") == "True"

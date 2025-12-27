@@ -52,6 +52,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     volumes:
+      - ./backend/.sessions:/sessions
       - static_volume:/app/static
       - logs_volume:/app/logs
       - /etc/localtime:/etc/localtime:ro

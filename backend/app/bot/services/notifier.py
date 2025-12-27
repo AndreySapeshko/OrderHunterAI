@@ -1,8 +1,6 @@
 from backend.app.bot.services.leads_keyboard import lead_keyboard
 from backend.app.db.models.lead_ai import LeadAI
-from backend.app.db.models.lead_notification import LeadNotification
 from backend.app.db.models.leads import Lead
-from backend.app.db.session import async_session
 
 
 async def notify_lead(bot, chat_id: int, lead: Lead, lead_ai: LeadAI):
@@ -20,7 +18,3 @@ async def notify_lead(bot, chat_id: int, lead: Lead, lead_ai: LeadAI):
         reply_markup=lead_keyboard(str(lead.id)),
         disable_web_page_preview=True,
     )
-
-    async with async_session() as session:
-        session.add(LeadNotification(lead_id=lead.id))
-        await session.commit()

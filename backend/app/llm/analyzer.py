@@ -2,6 +2,7 @@ import logging
 
 from pydantic import ValidationError
 
+from backend.app.db.crud import activate_state
 from backend.app.db.models.lead_ai import LeadAI
 from backend.app.db.session import async_session
 from backend.app.llm.schemas import LLMLeadResult
@@ -18,6 +19,7 @@ class LeadAnalyzer:
 
     async def analyze(self, lead) -> bool:
         prompt = render_messages(lead.description)
+        logger.info("SART LLM analyze")
 
         try:
             raw = await self.llm.analyze(prompt)
@@ -26,7 +28,8 @@ class LeadAnalyzer:
             logger.exception("LLM response validation failed")
             return False
         except Exception:
-            logger.exception("LLM call failed")
+            logger.exception("LLM call failed and disable")
+            await activate_state("disable_llm")
             return False
         extracted = parsed.model_dump(
             exclude={

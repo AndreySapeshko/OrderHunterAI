@@ -1,9 +1,14 @@
+from datetime import datetime
+
+from asyncpg.pgproto.pgproto import timedelta
 from sqlalchemy import UUID, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.app.db import RawItem
 from backend.app.db.models.lead_ai import LeadAI
 from backend.app.db.models.lead_notification import LeadNotification
 from backend.app.db.models.leads import Lead
+from backend.app.db.models.system_state import SystemState
 from backend.app.db.models.user import User
 from backend.app.db.models.user_rule import UserRule
 from backend.app.db.session import async_session
@@ -89,3 +94,34 @@ async def get_or_create_user(
     await session.flush()
 
     return user
+
+
+async def is_already_saved(external_id: str):
+    async with async_session() as session:
+        stmt = select(RawItem).where(RawItem.external_id == external_id)
+        raw_item = (await session.scalars(stmt)).one_or_none()
+        if raw_item:
+            return True
+        return False
+
+
+async def activate_state(name_state: str, ttl_hours: int = 1):
+    async with async_session() as session:
+        stmt = select(SystemState).where(SystemState.name == name_state)
+        state = (await session.scalars(stmt)).one_or_none()
+
+        if not state:
+            state = SystemState(name=name_state)
+            session.add(state)
+            await session.flush()
+
+        state.limited_to = datetime.utcnow() + timedelta(hours=ttl_hours)
+
+        await session.commit()
+
+
+async def get_limited_to(name_state: str):
+    async with async_session() as session:
+        stmt = select(SystemState).where(SystemState.name == name_state)
+        state = (await session.scalars(stmt)).one_or_none()
+        return state.limited_to if state else None

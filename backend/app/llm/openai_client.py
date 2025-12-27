@@ -30,7 +30,7 @@ class OpenAILLMClient(BaseLLMClient):
             self._last_call = time.time()
 
     async def analyze(self, messages: list[dict]) -> dict:
-        for attempt in range(7):
+        for attempt in range(5):
             await self._throttled()
             try:
                 resp = await self.client.chat.completions.create(
