@@ -1,4 +1,4 @@
-KEYWORDS_TELEGRAM = [" ai ", " бот", "чат", "gpt", "автоматизац", "llm", "telegram", "телеграм", "парс"]
+KEYWORDS_TELEGRAM = [" ai ", " бот", "чат", "gpt", "автоматизац", "llm", "telegram", "телеграм", "парс", "python"]
 
 MIN_TEXT_LENGTH = 300
 

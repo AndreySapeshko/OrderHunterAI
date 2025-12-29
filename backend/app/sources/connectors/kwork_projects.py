@@ -1,14 +1,12 @@
 import asyncio
 import logging
 import random
+
 import httpx
 
-from backend.app.db.crud import is_already_saved
 from backend.app.sources.base import BaseSourceConnector
-from backend.app.sources.selection_parameters import KEYWORDS_TELEGRAM
 from backend.app.sources.state import SourceState
-from backend.app.sources.types import RawSourceItem
-from backend.app.sources.utils import parse_kwork_date, parse_kwork_projects
+from backend.app.sources.utils import parse_kwork_projects, process_projects
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +37,9 @@ class KworkProjectsConnector(BaseSourceConnector):
         super().__init__(state)
         self.client = httpx.AsyncClient(headers=HEADERS, timeout=30)
 
+    async def aclose(self):
+        await self.client.aclose()
+
     async def fetch(self, since=None, cursor=None, limit: int = 20):
         collected = 0
 
@@ -47,7 +48,6 @@ class KworkProjectsConnector(BaseSourceConnector):
                 break
 
             url = f"{BASE_URL}?a={category_id}"
-            stop_category = False
             for page in range(1, 4):
                 resp = await self.client.get(url)
 
@@ -57,41 +57,15 @@ class KworkProjectsConnector(BaseSourceConnector):
 
                 if not projects:
                     break
+                stop_category, items = await process_projects(projects)
 
-                for project in projects[:limit]:
-                    if await is_already_saved(f"kwork:{project.get("id", "")}"):
-                        stop_category = True
-                        break
-
-                    project_id = project.get("id") or project.get("wantId")
-                    if not project_id:
-                        continue
-
-                    content = project.get("description", "").lower()
-                    matched = [k for k in KEYWORDS_TELEGRAM if k.lower() in content]
-                    if not matched:
-                        logger.info("SKIP (no keywords): id=%s title=%s", project.get("id"), project.get("title"))
-                        continue
-
-                    yield RawSourceItem(
-                        external_id=f"kwork:{project.get("id", "")}",
-                        title=project.get("title", ""),
-                        content=content,
-                        author=f"kwork id:{project.get("user_id", "")} username: {project.get("username", "unknown")}",
-                        published_at=parse_kwork_date(project.get("date_create")),
-                        url=f"https://kwork.ru/projects/{project.get("id")}",
-                        metadata={
-                            "price_limit": project.get("price_limit", ""),
-                            "possible_price_limit": project.get("possible_price_limit", ""),
-                            "category_id": project.get("category_id"),
-                            "expires_at": project.get("expires_at"),
-                            "lang": project.get("lang"),
-                        },
-                    )
+                for item in items:
+                    yield item
                     collected += 1
 
                 if stop_category:
                     break
 
-                # анти-бан пауза
                 await asyncio.sleep(random.uniform(2.0, 4.0))
+
+        await self.aclose()

@@ -1,7 +1,14 @@
 import json
+import logging
 import re
 from datetime import datetime, timezone
 from typing import Any, Dict, List
+
+from backend.app.db.crud import is_already_saved
+from backend.app.sources.selection_parameters import KEYWORDS_TELEGRAM
+from backend.app.sources.types import RawSourceItem
+
+logger = logging.getLogger(__name__)
 
 
 def extract_nuxt_data(html: str) -> dict:
@@ -95,11 +102,17 @@ def parse_kwork_projects(html: str) -> List[Dict[str, Any]]:
         if not pid:
             continue
 
+        description = p.get("description", "").lower()
+        matched = [k for k in KEYWORDS_TELEGRAM if k.lower() in description]
+        if not matched:
+            logger.info("SKIP (no keywords): id=%s title=%s", p.get("id"), p.get("name"))
+            continue
+
         result.append(
             {
                 "id": pid,
                 "title": (p.get("name") or "").strip(),
-                "description": (p.get("description") or "").strip(),
+                "description": description,
                 "price_limit": p.get("priceLimit"),
                 "possible_price_limit": str(p.get("possiblePriceLimit")),
                 "category_id": p.get("category_id"),
@@ -113,3 +126,36 @@ def parse_kwork_projects(html: str) -> List[Dict[str, Any]]:
         )
 
     return result
+
+
+async def process_projects(projects: list[dict[str, Any]]) -> tuple[bool, list[RawSourceItem]]:
+    stop_category = False
+    items = []
+    for project in projects:
+        project_id = project.get("id") or project.get("wantId")
+        if not project_id:
+            continue
+
+        external_id = f"kwork:{project_id}"
+        if await is_already_saved(external_id):
+            stop_category = True
+            break
+
+        items.append(
+            RawSourceItem(
+                external_id=external_id,
+                title=project.get("title", ""),
+                content=project.get("description", ""),
+                author=f"kwork id:{project.get("user_id", "")} username: {project.get("username", "unknown")}",
+                published_at=parse_kwork_date(project.get("date_create")),
+                url=f"https://kwork.ru/projects/{project_id}",
+                metadata={
+                    "price_limit": project.get("price_limit", ""),
+                    "possible_price_limit": project.get("possible_price_limit", ""),
+                    "category_id": project.get("category_id"),
+                    "expires_at": project.get("expires_at"),
+                    "lang": project.get("lang"),
+                },
+            )
+        )
+    return stop_category, items
