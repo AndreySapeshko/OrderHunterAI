@@ -16,9 +16,7 @@ class LeadAIOut(BaseModel):
 
 class LeadOut(BaseModel):
     id: UUID
-    title: str
-    description: str
-    status: str
+    raw_item_id: UUID
     created_at: datetime
 
     ai: Optional[LeadAIOut] = None
@@ -27,9 +25,7 @@ class LeadOut(BaseModel):
     def from_orm(cls, lead, lead_ai):
         return cls(
             id=lead.id,
-            title=lead.title,
-            description=lead.description,
-            status=lead.status,
+            raw_item_id=lead.raw_item_id,
             created_at=lead.created_at,
             ai=(
                 LeadAIOut(

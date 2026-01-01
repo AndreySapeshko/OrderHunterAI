@@ -1,6 +1,7 @@
 import uuid
 
-from sqlalchemy import UUID, Column, DateTime, String, Text, func
+from sqlalchemy import UUID, Column, DateTime, Integer, String, Text, func
+from sqlalchemy.orm import relationship
 
 from backend.app.db.base import Base
 
@@ -16,6 +17,15 @@ class RawItem(Base):
     content = Column(Text)
     author = Column(String, nullable=True)
     published_at = Column(DateTime(timezone=True), nullable=True)
+    price_limit = Column(Integer, nullable=True)
+    possible_price_limit = Column(Integer, nullable=True)
+    currency = Column(String, default="RUB")
 
     content_hash = Column(String, index=True)
     fetched_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    lead = relationship(
+        "Lead",
+        back_populates="raw_item",
+        uselist=False,
+    )

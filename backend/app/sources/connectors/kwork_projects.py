@@ -57,6 +57,7 @@ class KworkProjectsConnector(BaseSourceConnector):
 
                 if not projects:
                     break
+
                 stop_category, items = await process_projects(projects)
 
                 for item in items:

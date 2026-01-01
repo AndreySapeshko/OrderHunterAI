@@ -4,11 +4,12 @@ from unittest.mock import AsyncMock
 
 import pytest
 
+from backend.app.db import UserRule
 from backend.app.ingestion.pipeline import IngestionPipeline
 
 
 @pytest.mark.asyncio
-async def test_pipeline_calls_process_new_lead(mocker, sessionmaker, monkeypatch):
+async def test_pipeline_calls_process_new_lead(mocker, sessionmaker, monkeypatch, session, test_user):
     monkeypatch.setattr("backend.app.ingestion.pipeline.async_session", sessionmaker)
     monkeypatch.setattr("backend.app.sources.state.async_session", sessionmaker)
     monkeypatch.setattr("backend.app.llm.analyzer.async_session", sessionmaker)
@@ -19,10 +20,17 @@ async def test_pipeline_calls_process_new_lead(mocker, sessionmaker, monkeypatch
         external_id="1",
         url="https://reddit.com/r/forhire/test",
         title="Need AI chatbot",
-        content="Looking for GPT chatbot",
+        content="Looking for AI agent developer Looking for AI agent developer AI agent developer "
+        "Looking for AI agent developer Looking for AI agent developer AI agent developer "
+        "Looking for AI agent developer Looking for AI agent developer AI agent developer",
         author="testuser",
         published_at=datetime.now(tz=timezone.utc),
+        metadata={},
     )
+
+    rule = UserRule(user_id=test_user.id, include_keywords="agent")
+    session.add(rule)
+    await session.commit()
 
     async def fake_fetch(*args, **kwargs):
         yield fake_item
@@ -39,7 +47,7 @@ async def test_pipeline_calls_process_new_lead(mocker, sessionmaker, monkeypatch
     pipeline = IngestionPipeline(fake_connector)
 
     process_mock = mocker.patch(
-        "backend.app.ingestion.pipeline.process_new_lead",
+        "backend.app.ingestion.pipeline.process_new_lead_ai",
         new_callable=AsyncMock,
     )
 

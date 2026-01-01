@@ -2,6 +2,7 @@ import logging
 
 from pydantic import ValidationError
 
+from backend.app.db import Lead, RawItem
 from backend.app.db.crud import activate_state
 from backend.app.db.models.lead_ai import LeadAI
 from backend.app.db.session import async_session
@@ -17,8 +18,8 @@ class LeadAnalyzer:
         self.model = llm_client.model
         self.prompt_version = prompt_version
 
-    async def analyze(self, lead) -> bool:
-        prompt = render_messages(lead.description)
+    async def analyze(self, lead: Lead, raw: RawItem) -> bool:
+        prompt = render_messages(raw.content)
         logger.info("SART LLM analyze")
 
         try:

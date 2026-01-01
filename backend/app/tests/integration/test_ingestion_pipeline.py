@@ -16,7 +16,7 @@ async def test_ingestion_idempotent(session, sessionmaker, monkeypatch):
     monkeypatch.setattr("backend.app.sources.state.async_session", sessionmaker)
     monkeypatch.setattr("backend.app.llm.analyzer.async_session", sessionmaker)
     monkeypatch.setattr("backend.app.db.crud.async_session", sessionmaker)
-    with (patch("backend.app.ingestion.pipeline.process_new_lead", new_callable=AsyncMock),):
+    with (patch("backend.app.ingestion.pipeline.process_new_lead_ai", new_callable=AsyncMock),):
         state = SourceState()
         connector = DummySourceConnector(state=state)
         pipeline = IngestionPipeline(connector)
@@ -28,4 +28,4 @@ async def test_ingestion_idempotent(session, sessionmaker, monkeypatch):
         lead_count = await session.scalar(select(func.count()).select_from(Lead))
 
         assert raw_count == 1
-        assert lead_count == 1
+        assert lead_count == 0

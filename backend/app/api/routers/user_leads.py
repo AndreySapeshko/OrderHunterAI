@@ -5,6 +5,8 @@ from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import select
 
 from backend.app.api.schemas.lead import LeadOut, LeadStatusUpdate
+from backend.app.api.schemas.user_lead import UserLeadOut
+from backend.app.db import UserLead
 from backend.app.db.models.lead_ai import LeadAI
 from backend.app.db.models.leads import Lead
 from backend.app.db.session import async_session
@@ -12,16 +14,16 @@ from backend.app.db.session import async_session
 router = APIRouter()
 
 
-@router.get("/", response_model=List[LeadOut])
-async def list_leads(
+@router.get("/", response_model=List[UserLeadOut])
+async def list_user_leads(
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
 ):
     async with async_session() as session:
         stmt = (
-            select(Lead, LeadAI)
-            .outerjoin(LeadAI, LeadAI.lead_id == Lead.id)
-            .order_by(Lead.created_at.desc())
+            select(UserLead, Lead)
+            .outerjoin(Lead, Lead.id == UserLead.lead_id)
+            .order_by(UserLead.created_at.desc())
             .limit(limit)
             .offset(offset)
         )
@@ -29,16 +31,16 @@ async def list_leads(
         result = await session.execute(stmt)
 
     items = []
-    for lead, lead_ai in result:
-        items.append(LeadOut.from_orm(lead, lead_ai))
+    for user_lead, lead in result:
+        items.append(UserLeadOut.from_orm(user_lead, lead, lead.raw_item))
 
     return items
 
 
-@router.get("/{lead_id}", response_model=LeadOut)
-async def get_lead(lead_id: UUID):
+@router.get("/{user_lead_id}", response_model=UserLeadOut)
+async def get_user_lead(user_lead_id: UUID):
     async with async_session() as session:
-        stmt = select(Lead, LeadAI).outerjoin(LeadAI, LeadAI.lead_id == Lead.id).where(Lead.id == lead_id)
+        stmt = select(UserLead, Lead).outerjoin(Lead, Lead.id == UserLead.lead_id).where(UserLead.id == user_lead_id)
 
         result = await session.execute(stmt)
         row = result.first()
@@ -46,11 +48,11 @@ async def get_lead(lead_id: UUID):
     if not row:
         raise HTTPException(status_code=404, detail="Lead not found")
 
-    lead, lead_ai = row
-    return LeadOut.from_orm(lead, lead_ai)
+    user_lead, lead = row
+    return UserLeadOut.from_orm(user_lead, lead, lead.raw_item)
 
 
-@router.patch("/{lead_id}/status", response_model=LeadOut)
+@router.patch("/leads/{lead_id}/status", response_model=LeadOut)
 async def update_lead_status(
     lead_id: UUID,
     payload: LeadStatusUpdate,

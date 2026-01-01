@@ -5,7 +5,6 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 from backend.app.db.crud import is_already_saved
-from backend.app.sources.selection_parameters import KEYWORDS_TELEGRAM
 from backend.app.sources.types import RawSourceItem
 
 logger = logging.getLogger(__name__)
@@ -103,17 +102,15 @@ def parse_kwork_projects(html: str) -> List[Dict[str, Any]]:
             continue
 
         description = p.get("description", "").lower()
-        matched = [k for k in KEYWORDS_TELEGRAM if k.lower() in description]
-        if not matched:
-            logger.info("SKIP (no keywords): id=%s title=%s", p.get("id"), p.get("name"))
-            continue
+        price_str = p.get("priceLimit")
+        price_limit = int(price_str.split(".")[0]) if price_str else None
 
         result.append(
             {
                 "id": pid,
                 "title": (p.get("name") or "").strip(),
                 "description": description,
-                "price_limit": p.get("priceLimit"),
+                "price_limit": price_limit,
                 "possible_price_limit": str(p.get("possiblePriceLimit")),
                 "category_id": p.get("category_id"),
                 "lang": p.get("lang"),
@@ -151,7 +148,7 @@ async def process_projects(projects: list[dict[str, Any]]) -> tuple[bool, list[R
                 url=f"https://kwork.ru/projects/{project_id}",
                 metadata={
                     "price_limit": project.get("price_limit", ""),
-                    "possible_price_limit": project.get("possible_price_limit", ""),
+                    "possible_price_limit": str(project.get("possible_price_limit", "")),
                     "category_id": project.get("category_id"),
                     "expires_at": project.get("expires_at"),
                     "lang": project.get("lang"),

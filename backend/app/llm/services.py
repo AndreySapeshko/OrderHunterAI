@@ -1,12 +1,11 @@
 from sqlalchemy import UUID
 
-from backend.app.bot.services.sender import notification_sender
-from backend.app.db.crud import get_lead_ai, load_lead
+from backend.app.db.crud import load_lead
 from backend.app.llm.analyzer import LeadAnalyzer
 from backend.app.llm.openai_client import get_llm_client
 
 
-async def process_new_lead(lead_id: UUID):
+async def process_new_lead_ai(lead_id: UUID):
     lead = await load_lead(lead_id)
 
     analyzer = LeadAnalyzer(
@@ -14,10 +13,4 @@ async def process_new_lead(lead_id: UUID):
         prompt_version="v1",
     )
 
-    if not await analyzer.analyze(lead):
-        return
-
-    lead_ai = await get_lead_ai(lead.id)
-
-    if lead_ai and lead_ai.is_relevant:
-        await notification_sender(lead, lead_ai)
+    await analyzer.analyze(lead, lead.raw_item)

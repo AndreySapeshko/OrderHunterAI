@@ -1,8 +1,8 @@
-import pytest
-
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import AsyncMock
-from datetime import datetime, timezone
+
+import pytest
 
 from backend.app.sources.utils import parse_kwork_projects, process_projects
 
@@ -51,7 +51,7 @@ def test_parse_kwork_projects_keyword_filter():
 
     items = list(parse_kwork_projects(html))
 
-    assert items == []
+    assert len(items) == 1
 
 
 def test_parse_kwork_projects_date():

@@ -6,4 +6,5 @@ from backend.app.db.models.raw_items import RawItem
 from backend.app.db.models.source_state import SourceStateModel
 from backend.app.db.models.system_state import SystemState
 from backend.app.db.models.user import User
+from backend.app.db.models.user_lead import UserLead
 from backend.app.db.models.user_rule import UserRule

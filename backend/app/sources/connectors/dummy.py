@@ -11,7 +11,9 @@ class DummySourceConnector(BaseSourceConnector):
             external_id="1",
             url="https://example.com",
             title="Test AI Agent Project",
-            content="Looking for AI agent developer",
+            content="Looking for AI agent developer Looking for AI agent developer AI agent developer "
+            "Looking for AI agent developer Looking for AI agent developer AI agent developer "
+            "Looking for AI agent developer Looking for AI agent developer AI agent developer",
             author="tester",
             published_at=None,
             metadata={},

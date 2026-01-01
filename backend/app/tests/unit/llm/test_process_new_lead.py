@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from backend.app.llm.services import process_new_lead
+from backend.app.llm.services import process_new_lead_ai
 
 
 @pytest.mark.asyncio
@@ -22,11 +22,6 @@ async def test_process_new_lead_calls_notification(mocker):
         return_value=mocker.Mock(is_relevant=True),
     )
 
-    notify_mock = mocker.patch(
-        "backend.app.llm.services.notification_sender",
-        new_callable=AsyncMock,
-    )
+    await process_new_lead_ai(lead_id)
 
-    await process_new_lead(lead_id)
-
-    notify_mock.assert_awaited_once()
+    analyzer.assert_called_once()

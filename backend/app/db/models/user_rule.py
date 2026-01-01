@@ -13,10 +13,13 @@ class UserRule(Base):
     user_id = Column(UUID, index=True)
 
     min_score = Column(Integer, default=0)
-    categories = Column(ARRAY(String), nullable=True)
+    min_text_length = Column(Integer, default=0)
 
-    include_keywords = Column(ARRAY(String), nullable=True)
-    exclude_keywords = Column(ARRAY(String), nullable=True)
+    include_keywords = Column(ARRAY(String), nullable=True, default=list)
+    exclude_keywords = Column(ARRAY(String), nullable=True, default=list)
+
+    min_score_for_notis = Column(Integer, default=0)
+    keyword_for_notis = Column(ARRAY(String), nullable=True, default=list)
 
     enabled = Column(Boolean, index=True, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
