@@ -17,11 +17,6 @@ async def test_process_new_lead_calls_notification(mocker):
     )
     analyzer.return_value.analyze = AsyncMock(return_value=True)
 
-    mocker.patch(
-        "backend.app.llm.services.get_lead_ai",
-        return_value=mocker.Mock(is_relevant=True),
-    )
-
     await process_new_lead_ai(lead_id)
 
     analyzer.assert_called_once()
