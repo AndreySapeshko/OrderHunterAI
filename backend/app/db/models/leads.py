@@ -1,6 +1,6 @@
 import uuid
-
 from datetime import datetime
+
 from sqlalchemy import UUID, Boolean, Column, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 
