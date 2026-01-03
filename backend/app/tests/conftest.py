@@ -88,6 +88,22 @@ async def user(sessionmaker):
 
 
 @pytest.fixture
+async def other_user(sessionmaker):
+    async with sessionmaker() as session:
+        u = User(
+            chat_id=8765,
+            email="user_2@test.com",
+            password_hash=hash_password("user_2pass"),
+            is_active=True,
+            is_admin=False,
+        )
+        session.add(u)
+        await session.commit()
+        await session.refresh(u)
+        return u
+
+
+@pytest.fixture
 async def user_not_active(sessionmaker):
     async with sessionmaker() as session:
         user = User(

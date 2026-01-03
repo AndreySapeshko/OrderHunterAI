@@ -3,7 +3,7 @@ import logging.config
 
 from starlette.middleware.cors import CORSMiddleware
 
-from backend.app.api.routers import admin, auth, leads, raw_items, user_leads
+from backend.app.api.routers import admin, auth, leads, raw_items, user_leads, user_rules
 from backend.app.logging_config import LOGGING_CONFIG
 from backend.app.sources.registry import SourceRegistry
 
@@ -41,6 +41,7 @@ app.include_router(user_leads.router, prefix="/api/user_leads", tags=["user_lead
 app.include_router(raw_items.router, prefix="/api/raw_items", tags=["raw_items"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
+app.include_router(user_rules.router, prefix="/api/user_rules", tags=["rules"])
 
 
 @app.on_event("startup")
