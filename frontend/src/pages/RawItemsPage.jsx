@@ -3,13 +3,18 @@ import { useEffect, useState } from "react";
 export default function RawItemsPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    fetch("/api/raw-items?limit=50")
+    fetch("/api/raw_items?limit=50", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       .then((r) => r.json())
       .then(setItems)
       .finally(() => setLoading(false));
-  }, []);
+  }, [token]);
 
   return (
     <>

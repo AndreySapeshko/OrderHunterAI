@@ -1,15 +1,16 @@
 from typing import List
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.api.schemas.lead import LeadOut, LeadStatusUpdate
+from backend.app.api.auth.dependencies import get_current_user
+from backend.app.api.schemas.lead import LeadStatusUpdate
 from backend.app.api.schemas.user_lead import UserLeadOut
-from backend.app.db import UserLead
-from backend.app.db.models.lead_ai import LeadAI
+from backend.app.db import User, UserLead
 from backend.app.db.models.leads import Lead
-from backend.app.db.session import async_session
+from backend.app.db.session import get_session
 
 router = APIRouter()
 
@@ -18,12 +19,15 @@ router = APIRouter()
 async def list_user_leads(
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
 ):
-    async with async_session() as session:
+    async with session:
         stmt = (
             select(UserLead, Lead)
             .outerjoin(Lead, Lead.id == UserLead.lead_id)
             .order_by(UserLead.created_at.desc())
+            .where(UserLead.user_id == current_user.id)
             .limit(limit)
             .offset(offset)
         )
@@ -38,9 +42,15 @@ async def list_user_leads(
 
 
 @router.get("/{user_lead_id}", response_model=UserLeadOut)
-async def get_user_lead(user_lead_id: UUID):
-    async with async_session() as session:
-        stmt = select(UserLead, Lead).outerjoin(Lead, Lead.id == UserLead.lead_id).where(UserLead.id == user_lead_id)
+async def get_user_lead(
+    user_lead_id: UUID, current_user: User = Depends(get_current_user), session: AsyncSession = Depends(get_session)
+):
+    async with session:
+        stmt = (
+            select(UserLead, Lead)
+            .outerjoin(Lead, Lead.id == UserLead.lead_id)
+            .where(UserLead.user_id == current_user.id, UserLead.id == user_lead_id)
+        )
 
         result = await session.execute(stmt)
         row = result.first()
@@ -52,24 +62,30 @@ async def get_user_lead(user_lead_id: UUID):
     return UserLeadOut.from_orm(user_lead, lead, lead.raw_item)
 
 
-@router.patch("/leads/{lead_id}/status", response_model=LeadOut)
+@router.patch("/user_leads/{user_lead_id}/status", response_model=UserLeadOut)
 async def update_lead_status(
-    lead_id: UUID,
+    user_lead_id: UUID,
     payload: LeadStatusUpdate,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
 ):
-    async with async_session() as session:
-        lead = await session.get(Lead, lead_id)
+    async with session:
+        stmt = (
+            select(UserLead, Lead)
+            .outerjoin(Lead, Lead.id == UserLead.lead_id)
+            .where(UserLead.user_id == current_user.id, UserLead.id == user_lead_id)
+        )
 
-        if not lead:
-            raise HTTPException(status_code=404, detail="Lead not found")
-
-        lead.status = payload.status
-        await session.commit()
-        await session.refresh(lead)
-
-        # подтягиваем AI-данные
-        stmt = select(Lead, LeadAI).outerjoin(LeadAI, LeadAI.lead_id == Lead.id).where(Lead.id == lead_id)
         result = await session.execute(stmt)
-        lead, lead_ai = result.first()
+        row = result.first()
 
-    return LeadOut.from_orm(lead, lead_ai)
+    if not row:
+        raise HTTPException(status_code=404, detail="Lead not found")
+
+    user_lead, lead = row
+
+    user_lead.status = payload.status
+    await session.commit()
+    await session.refresh(user_lead)
+
+    return UserLeadOut.from_orm(user_lead, lead, lead.raw_item)

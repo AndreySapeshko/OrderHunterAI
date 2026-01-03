@@ -1,53 +1,78 @@
-import { useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 
 export default function UserLeadsPage() {
-  const [leads, setLeads] = useState([]);
-  const [loading, setLoading] = useState(true);
-  
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const loadLeads = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/user-leads?limit=50");
-    const data = await res.json();
-    setLeads(data);
-    setLoading(false);
+    setError("");
+
+    try {
+      const token = localStorage.getItem("token");
+      //console.log("TOKEN FROM LS:", token);
+      const res = await fetch("/api/user_leads/?limit=50", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      setItems(data);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  if (loading && leads.length === 0) {
+  useEffect(() => {
     loadLeads();
-  }
+  }, [loadLeads]);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div style={{ color: "crimson" }}>{error}</div>;
 
   return (
-    <>
-      <h1>My leads</h1>
-
-      <button onClick={loadLeads} disabled={loading}>
-        Refresh
-      </button>
+    <div style={{ padding: 20 }}>
+      <h1>User Leads</h1>
 
       <table width="100%" cellPadding="8">
         <thead>
           <tr>
             <th align="left">Title</th>
-            <th align="left">Score</th>
             <th align="left">Source</th>
-            <th align="left">Telegram</th>
+            <th align="left">Score</th>
+            <th align="left">Created</th>
           </tr>
         </thead>
         <tbody>
-          {leads.map((l) => (
-            <tr key={l.id}>
+          {items.map((ul) => (
+            <tr key={ul.id}>
               <td>
-                <Link to={`/leads/${l.id}`}>{l.title}</Link>
+                <Link to={`/user_leads/${ul.id}`}>
+                  {ul.raw_item?.title ?? "—"}
+                </Link>
               </td>
-              <td>{l.heuristic_score}</td>
-              <td>{l.source_id}</td>
-              <td>{l.sent_to_telegram ? "✅" : "—"}</td>
+              <td>{ul.raw_item?.source_id ?? "—"}</td>
+              <td>{ul.heuristic_score}</td>
+              <td>{new Date(ul.created_at).toLocaleString()}</td>
             </tr>
           ))}
+
+          {items.length === 0 && (
+            <tr>
+              <td colSpan="4" style={{ color: "#666" }}>
+                No leads yet
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
-    </>
+    </div>
   );
 }

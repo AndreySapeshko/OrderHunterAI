@@ -12,6 +12,8 @@ class UserRule(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID, index=True)
 
+    source_id = Column(ARRAY(String), nullable=True, default=list)
+
     min_score = Column(Integer, default=0)
     min_text_length = Column(Integer, default=0)
 

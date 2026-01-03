@@ -1,23 +1,23 @@
 from typing import List
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.api.schemas.lead import LeadOut, LeadStatusUpdate
 from backend.app.db.models.lead_ai import LeadAI
 from backend.app.db.models.leads import Lead
-from backend.app.db.session import async_session
+from backend.app.db.session import get_session
 
 router = APIRouter()
 
 
 @router.get("/", response_model=List[LeadOut])
 async def list_leads(
-    limit: int = Query(20, ge=1, le=100),
-    offset: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100), offset: int = Query(0, ge=0), session: AsyncSession = Depends(get_session)
 ):
-    async with async_session() as session:
+    async with session:
         stmt = (
             select(Lead, LeadAI)
             .outerjoin(LeadAI, LeadAI.lead_id == Lead.id)
@@ -36,8 +36,8 @@ async def list_leads(
 
 
 @router.get("/{lead_id}", response_model=LeadOut)
-async def get_lead(lead_id: UUID):
-    async with async_session() as session:
+async def get_lead(lead_id: UUID, session: AsyncSession = Depends(get_session)):
+    async with session:
         stmt = select(Lead, LeadAI).outerjoin(LeadAI, LeadAI.lead_id == Lead.id).where(Lead.id == lead_id)
 
         result = await session.execute(stmt)
@@ -51,11 +51,8 @@ async def get_lead(lead_id: UUID):
 
 
 @router.patch("/{lead_id}/status", response_model=LeadOut)
-async def update_lead_status(
-    lead_id: UUID,
-    payload: LeadStatusUpdate,
-):
-    async with async_session() as session:
+async def update_lead_status(lead_id: UUID, payload: LeadStatusUpdate, session: AsyncSession = Depends(get_session)):
+    async with session:
         lead = await session.get(Lead, lead_id)
 
         if not lead:

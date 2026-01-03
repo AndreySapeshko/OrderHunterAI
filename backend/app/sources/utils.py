@@ -102,15 +102,13 @@ def parse_kwork_projects(html: str) -> List[Dict[str, Any]]:
             continue
 
         description = p.get("description", "").lower()
-        price_str = p.get("priceLimit")
-        price_limit = int(price_str.split(".")[0]) if price_str else None
 
         result.append(
             {
                 "id": pid,
                 "title": (p.get("name") or "").strip(),
                 "description": description,
-                "price_limit": price_limit,
+                "price_limit": p.get("priceLimit"),
                 "possible_price_limit": str(p.get("possiblePriceLimit")),
                 "category_id": p.get("category_id"),
                 "lang": p.get("lang"),
@@ -147,8 +145,8 @@ async def process_projects(projects: list[dict[str, Any]]) -> tuple[bool, list[R
                 published_at=parse_kwork_date(project.get("date_create")),
                 url=f"https://kwork.ru/projects/{project_id}",
                 metadata={
-                    "price_limit": project.get("price_limit", ""),
-                    "possible_price_limit": str(project.get("possible_price_limit", "")),
+                    "price_limit": project.get("price_limit"),
+                    "possible_price_limit": project.get("possible_price_limit"),
                     "category_id": project.get("category_id"),
                     "expires_at": project.get("expires_at"),
                     "lang": project.get("lang"),

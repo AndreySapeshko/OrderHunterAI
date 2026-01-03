@@ -1,4 +1,11 @@
-KEYWORDS_TELEGRAM = [
+import asyncio
+
+from sqlalchemy import select
+
+from backend.app.db import User, UserRule
+from backend.app.db.session import async_session
+
+KEYWORDS = [
     " ai ",
     " бот",
     "бот ",
@@ -22,7 +29,23 @@ KEYWORDS_TELEGRAM = [
     "бекенд",
 ]
 
-MIN_TEXT_LENGTH = 300
+min_score = 3
+
+min_score_for_notis = 5
+keyword_for_notis = [
+    "telegram-bot",
+    "telegram bot",
+    "телеграмм бот",
+    "ai bot",
+    "bot ai",
+    "бот ии",
+    " ии бот",
+    "бот с ии",
+    "backend",
+    "бекенд",
+]
+
+MIN_TEXT_LENGTH = 200
 
 STOP_WORDS = [
     "#резюме",
@@ -33,6 +56,24 @@ STOP_WORDS = [
     "ищу проект",
     "рассмотрю предложения",
 ]
+
+
+async def create_rules(chat_id):
+    async with async_session() as session:
+        stmt = select(User).where(User.chat_id == chat_id)
+        user = (await session.scalars(stmt)).one_or_none()
+        rule = UserRule(
+            user_id=user.id,
+            include_keywords=KEYWORDS,
+            exclude_keywords=STOP_WORDS,
+            min_text_length=MIN_TEXT_LENGTH,
+            min_score=min_score,
+            min_score_for_notis=min_score_for_notis,
+            keyword_for_notis=keyword_for_notis,
+        )
+        session.add(rule)
+        await session.commit()
+
 
 # DICT_PARS = {
 #     "userAlreadyWork": null,
@@ -126,3 +167,6 @@ STOP_WORDS = [
 #     "categoryLinksIdRu": 59,
 #     "getPriceThreshold": 4000
 # }
+
+if __name__ == "__main__":
+    asyncio.run(create_rules(5132716765))

@@ -124,10 +124,7 @@ async def get_or_create_user(
         return user
 
     # создаём нового пользователя
-    user = User(
-        chat_id=telegram_id,
-        username=username,
-    )
+    user = User(chat_id=telegram_id, username=username, password_hash="password_hash", email="test@tester.ru")
     session.add(user)
     await session.flush()
 
@@ -163,3 +160,8 @@ async def get_limited_to(name_state: str):
         stmt = select(SystemState).where(SystemState.name == name_state)
         state = (await session.scalars(stmt)).one_or_none()
         return state.limited_to if state else None
+
+
+async def get_user_by_email(email, session):
+    stmt = select(User).where(User.email == email)
+    return (await session.scalars(stmt)).one_or_none()
