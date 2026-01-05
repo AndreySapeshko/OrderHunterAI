@@ -17,7 +17,7 @@ async def test_create_rule(client: AsyncClient, user, engine):
     app.dependency_overrides[get_session] = override_get_session
 
     payload = {
-        "source_id": ["telegram"],
+        "source_ids": ["telegram"],
         "include_keywords": ["python", "bot"],
         "exclude_keywords": ["resume"],
         "min_text_length": 200,
@@ -40,7 +40,7 @@ async def test_create_rule(client: AsyncClient, user, engine):
     assert r.status_code == 200
     data = r.json()
 
-    assert data["source_id"] == ["telegram"]
+    assert data["source_ids"] == ["telegram"]
     assert "id" in data
     assert data["enabled"] is True
 
