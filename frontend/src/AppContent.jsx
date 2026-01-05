@@ -7,6 +7,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import { useAuth } from "./auth/useAuth";
+import RulesPage from "./pages/RulesPage.jsx";
 
 export default function AppContent() {
   const { user, logout } = useAuth();
@@ -27,6 +28,8 @@ export default function AppContent() {
 
         {user ? (
           <>
+            {" | "}
+            <Link to="/user_rules">Rules</Link>
             {" | "}
             <button onClick={logout}>Logout</button>
           </>
@@ -78,6 +81,15 @@ export default function AppContent() {
           element={
             <RequireAuth>
               <RawItemsPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/user_rules"
+          element={
+            <RequireAuth>
+              <RulesPage />
             </RequireAuth>
           }
         />

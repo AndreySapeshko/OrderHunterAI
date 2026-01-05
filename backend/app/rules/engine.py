@@ -10,15 +10,17 @@ class RuleEngine:
     def __init__(self, rules: list[UserRule]):
         self.rules = [r for r in rules if r.enabled]
 
-    def match(self, raw: RawItem) -> tuple[bool, int]:
+    def match(self, raw: RawItem, sourse_id: str) -> tuple[bool, int]:
         match = True
         score = 0
         for rule in self.rules:
-            match, score = self._match_rule(rule, raw)
-            if not match:
-                continue
-            else:
-                return match, score
+            if not rule.source_ids or sourse_id in rule.source_ids:
+                match, score = self._match_rule(rule, raw)
+                if not match:
+                    continue
+                else:
+                    return match, score
+
         return match, score
 
     def _match_rule(self, rule, raw) -> tuple[bool, int]:
@@ -31,8 +33,8 @@ class RuleEngine:
 
         if MIN_TEXT_LENGTH > len(content):
             return False, 0
-        content_matched = [k for k in KEYWORDS if k.lower() in content]
-        title_matched = [k for k in KEYWORDS if k.lower() in title]
+        content_matched = [k for k in KEYWORDS if k.replace("_", " ").lower() in content]
+        title_matched = [k for k in KEYWORDS if k.replace("_", " ").lower() in title]
 
         text = title + " " + content
 
@@ -58,7 +60,7 @@ class RuleEngine:
     def should_notify(self, raw, score):
         text = (raw.title + " " + raw.content).lower()
         for rule in self.rules:
-            matched = [k for k in rule.keyword_for_notis if k.lower() in text]
+            matched = [k for k in rule.keywords_for_notis if k.lower() in text]
             if matched and score > rule.min_score_for_notis:
                 return True
         return False

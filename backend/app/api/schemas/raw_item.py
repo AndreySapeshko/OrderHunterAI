@@ -10,6 +10,7 @@ class RawItemListOut(BaseModel):
     content: str
     source_id: str
     published_at: datetime
+    url: str
 
     @classmethod
     def from_orm(cls, raw_item):
@@ -19,6 +20,7 @@ class RawItemListOut(BaseModel):
             content=raw_item.content,
             source_id=raw_item.source_id,
             published_at=raw_item.published_at,
+            url=raw_item.url,
         )
 
 

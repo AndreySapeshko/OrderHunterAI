@@ -8,7 +8,7 @@ from backend.app.db.models.raw_items import RawItem
 from backend.app.rules.engine import RuleEngine
 
 
-async def process_created_lead(raw: RawItem):
+async def process_created_lead(raw: RawItem, source_id: str):
     items = await get_all_active_users_with_rules()
     lead = None
 
@@ -16,7 +16,7 @@ async def process_created_lead(raw: RawItem):
         user = item.get("user")
         rules = item.get("rules")
         engine = RuleEngine(rules)
-        match, scor = engine.match(raw)
+        match, scor = engine.match(raw, source_id)
 
         if user and match:
             lead = await get_or_create_lead_by_row_item(raw)

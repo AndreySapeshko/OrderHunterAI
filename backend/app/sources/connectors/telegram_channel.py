@@ -1,10 +1,9 @@
 import os
-from datetime import timezone
 
+from datetime import timezone
 from telethon import TelegramClient
 
 from backend.app.sources.base import BaseSourceConnector
-from backend.app.sources.selection_parameters import KEYWORDS_TELEGRAM, MIN_TEXT_LENGTH, STOP_WORDS
 from backend.app.sources.state import SourceState
 from backend.app.sources.types import RawSourceItem
 
@@ -61,17 +60,6 @@ class TelegramChannelConnector(BaseSourceConnector):
             for channel in self.channels:
                 async for message in client.iter_messages(channel, limit=limit):
                     if not message.text:
-                        continue
-
-                    text = message.text.lower()
-
-                    if len(text) < MIN_TEXT_LENGTH:
-                        continue
-
-                    if any(sw in text for sw in STOP_WORDS):
-                        continue
-
-                    if not any(k in text for k in KEYWORDS_TELEGRAM):
                         continue
 
                     author = extract_author(message, channel)

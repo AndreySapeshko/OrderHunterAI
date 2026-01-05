@@ -3,18 +3,14 @@ import { useEffect, useState } from "react";
 export default function RawItemsPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem("token");
+  //const token = localStorage.getItem("token");
 
   useEffect(() => {
-    fetch("/api/raw_items?limit=50", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+    fetch("/api/raw_items?limit=50")
       .then((r) => r.json())
       .then(setItems)
       .finally(() => setLoading(false));
-  }, [token]);
+  }, []);
 
   return (
     <>
@@ -27,6 +23,7 @@ export default function RawItemsPage() {
           <tr>
             <th align="left">Title</th>
             <th align="left">Source</th>
+            <th align="left">Url original</th>
             <th align="left">Price</th>
             <th align="left">Score</th>
           </tr>
@@ -36,6 +33,11 @@ export default function RawItemsPage() {
             <tr key={it.id}>
               <td>{it.title}</td>
               <td>{it.source_id}</td>
+              <td>
+                <a href={it?.url} target="_blank" rel="noreferrer">
+                  {it.url}
+                </a>
+              </td>
               <td>
                 {it.price_limit || "-"} / {it.possible_price_limit || "-"}
               </td>

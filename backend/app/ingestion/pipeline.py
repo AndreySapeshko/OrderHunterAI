@@ -64,7 +64,7 @@ class IngestionPipeline:
             await session.flush()
             await session.commit()
 
-            lead = await process_created_lead(raw)
+            lead = await process_created_lead(raw, self.connector.source_id)
 
             if lead is None:
                 logger.warning("SKIP (not match): id=%s title=%s", raw.id, title)

@@ -38,11 +38,6 @@ class RedditForHireConnector(BaseSourceConnector):
         for post in posts:
             p = post["data"]
 
-            # базовая фильтрация по ключевым словам
-            text = f"{p.get('title', '')} {p.get('selftext', '')}".lower()
-            if not any(k in text for k in ["ai", "gpt", "bot", "automation", "agent"]):
-                continue
-
             yield RawSourceItem(
                 external_id=p["id"],
                 url=f"https://reddit.com{p['permalink']}",
