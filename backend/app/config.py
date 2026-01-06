@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 OPEN_AI_KEY = os.environ.get("OPEN_AI_KEY", default="my_api_key")
+OPEN_ROUTER_URL = os.environ.get("OPEN_ROUTER_URL", default="https://openrouter.ai/api/v1")
+OPEN_ROUTER_KEY = os.environ.get("OPEN_ROUTER_KEY", default="my_api_key")
 
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", default="8385355917:AAE_--OC5G8G0ODJ1TVScI6YbEZkA4PX484")
 

@@ -140,13 +140,13 @@ async def is_already_saved(external_id: str):
         return False
 
 
-async def activate_state(name_state: str, ttl_hours: int = 1):
+async def activate_state(name_state: str, client_id: str, ttl_hours: int = 1):
     async with async_session() as session:
-        stmt = select(SystemState).where(SystemState.name == name_state)
+        stmt = select(SystemState).where(SystemState.name == name_state, SystemState.value == client_id)
         state = (await session.scalars(stmt)).one_or_none()
 
         if not state:
-            state = SystemState(name=name_state)
+            state = SystemState(name=name_state, value=client_id)
             session.add(state)
             await session.flush()
 
@@ -155,9 +155,9 @@ async def activate_state(name_state: str, ttl_hours: int = 1):
         await session.commit()
 
 
-async def get_limited_to(name_state: str):
+async def get_limited_to(name_state: str, client_id: str):
     async with async_session() as session:
-        stmt = select(SystemState).where(SystemState.name == name_state)
+        stmt = select(SystemState).where(SystemState.name == name_state, SystemState.value == client_id)
         state = (await session.scalars(stmt)).one_or_none()
         return state.limited_to if state else None
 

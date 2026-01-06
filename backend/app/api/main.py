@@ -4,6 +4,7 @@ import logging.config
 from starlette.middleware.cors import CORSMiddleware
 
 from backend.app.api.routers import admin, auth, leads, raw_items, user_leads, user_rules
+from backend.app.llm.registry import ClientRegistry
 from backend.app.logging_config import LOGGING_CONFIG
 from backend.app.sources.registry import SourceRegistry
 
@@ -12,12 +13,18 @@ logger = logging.getLogger(__name__)
 
 from fastapi import FastAPI
 
+import backend.app.llm.registry_clients
 import backend.app.sources.connectors.registry_connectors
 from backend.app.api.scheduler import scheduler, setup_scheduler
 
 logger.info(
     "Registered sources: %s",
     SourceRegistry.list_sources(),
+)
+
+logger.info(
+    "Registered clients: %s",
+    ClientRegistry.list_client_names(),
 )
 
 app = FastAPI(

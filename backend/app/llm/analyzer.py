@@ -1,5 +1,6 @@
 import logging
 
+import openai
 from pydantic import ValidationError
 
 from backend.app.db import Lead, RawItem
@@ -19,19 +20,26 @@ class LeadAnalyzer:
         self.prompt_version = prompt_version
 
     async def analyze(self, lead: Lead, raw: RawItem) -> bool:
-        prompt = render_messages(raw.content)
-        logger.info("SART LLM analyze")
+        message = render_messages(raw.content, self.llm.prompt)
+        logger.info(f"START LLM analyze with {self.llm.client_id}")
 
         try:
-            raw = await self.llm.analyze(prompt)
+            raw = await self.llm.analyze(message)
             parsed = LLMLeadResult.model_validate(raw)
+
         except ValidationError:
-            logger.exception("LLM response validation failed")
+            logger.exception(f"LLM {self.llm.client_id} response validation failed")
             return False
+
+        except openai.RateLimitError:
+            logger.warning("Rate limit, temporary")
+            return False  # не отключаем
+
         except Exception:
             logger.exception("LLM call failed and disable")
-            await activate_state("disable_llm")
+            await activate_state("disable_llm", self.llm.client_id)
             return False
+
         extracted = parsed.model_dump(
             exclude={
                 "is_relevant",
@@ -51,4 +59,12 @@ class LeadAnalyzer:
 
         async with async_session.begin() as session:
             await session.merge(ai)
+        logger.info(
+            "LLM success",
+            extra={
+                "client": self.llm.client_id,
+                "model": self.model,
+                "prompt": self.prompt_version,
+            },
+        )
         return True

@@ -1,9 +1,7 @@
 import logging
-from datetime import datetime
 
 from sqlalchemy import select
 
-from backend.app.db.crud import get_limited_to
 from backend.app.db.models.raw_items import RawItem
 from backend.app.db.session import async_session
 from backend.app.ingestion.dedup import compute_content_hash
@@ -68,12 +66,6 @@ class IngestionPipeline:
 
             if lead is None:
                 logger.warning("SKIP (not match): id=%s title=%s", raw.id, title)
-                await session.commit()
-                return
-
-            disabled_until = await get_limited_to("disable_llm")
-            if disabled_until and disabled_until > datetime.utcnow():
-                logger.warning("LLM disabled, skipping analysis")
                 await session.commit()
                 return
 

@@ -7,11 +7,15 @@ from openai import AsyncOpenAI
 
 from backend.app.config import OPEN_AI_KEY
 from backend.app.llm.client import BaseLLMClient
+from backend.app.llm.prompts.lead_analysis_v1 import LEAD_ANALYSIS_PROMPT_V1
 
 client = AsyncOpenAI(api_key=OPEN_AI_KEY)
 
 
 class OpenAILLMClient(BaseLLMClient):
+    client_id = "open_ai"
+    prompt = LEAD_ANALYSIS_PROMPT_V1
+
     def __init__(self, client: AsyncOpenAI, model: str = "gpt-4.1-mini", min_interval: float = 31.0):
         self.client = client
         self.model = model
@@ -47,5 +51,5 @@ class OpenAILLMClient(BaseLLMClient):
         raise RuntimeError("LLM rate limit retry failed")
 
 
-def get_llm_client() -> OpenAILLMClient:
+def get_open_ai_client() -> OpenAILLMClient:
     return OpenAILLMClient(client)
