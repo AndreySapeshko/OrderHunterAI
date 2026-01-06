@@ -36,6 +36,8 @@ services:
       retries: 5
 
   backend:
+    ports:
+      - "8000:8000"
     build:
       context: .
       dockerfile: docker/backend/Dockerfile
@@ -50,46 +52,9 @@ services:
         condition: service_healthy
     restart: unless-stopped
     volumes:
+      - ./backend/.sessions:/sessions
       - static_volume:/app/static
       - logs_volume:/app/logs
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
-
-  celery_worker:
-    build:
-      context: .
-      dockerfile: docker/backend/Dockerfile
-    container_name: celery_worker
-    env_file: .env
-    networks:
-      - internal
-    command: celery -A app.api.celery_app:celery_app worker --loglevel=info
-    restart: unless-stopped
-    depends_on:
-      backend:
-        condition: service_started
-      redis:
-        condition: service_healthy
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
-
-  celery_beat:
-    build:
-      context: .
-      dockerfile: docker/backend/Dockerfile
-    container_name: celery_beat
-    env_file: .env
-    networks:
-      - internal
-    command: celery -A app.api.celery_app:celery_app beat --loglevel=info
-    restart: unless-stopped
-    depends_on:
-      backend:
-        condition: service_started
-      redis:
-        condition: service_healthy
-    volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
 

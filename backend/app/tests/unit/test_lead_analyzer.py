@@ -1,7 +1,7 @@
 import pytest
-
 from sqlalchemy import select
 
+from backend.app.db import RawItem
 from backend.app.db.models.lead_ai import LeadAI
 from backend.app.db.models.leads import Lead
 from backend.app.llm.analyzer import LeadAnalyzer
@@ -24,12 +24,12 @@ async def test_lead_analyzer_ai_lead(session, sessionmaker, monkeypatch):
 
     llm = FakeLLMClient(fake_response)
     analyzer = LeadAnalyzer(llm_client=llm, prompt_version="v1")
-
-    lead = Lead(title="AI chatbot for support", description="Need an AI chatbot using GPT for customer support")
+    raw = RawItem(source_id="kwork_projects", title="Test title", content="Test description")
+    lead = Lead(raw_item_id=raw.id)
     session.add(lead)
     await session.commit()
 
-    await analyzer.analyze(lead)
+    await analyzer.analyze(lead, raw)
 
     async with sessionmaker() as session:
         ai = await session.scalar(select(LeadAI).where(LeadAI.lead_id == lead.id))
@@ -57,12 +57,12 @@ async def test_lead_analyzer_not_ai(session, sessionmaker, monkeypatch):
 
     llm = FakeLLMClient(fake_response)
     analyzer = LeadAnalyzer(llm_client=llm, prompt_version="v1")
-
-    lead = Lead(title="AI chatbot for support", description="Need an AI chatbot using GPT for customer support")
+    raw = RawItem(source_id="kwork_projects", title="Test title", content="Test description")
+    lead = Lead(raw_item_id=raw.id)
     session.add(lead)
     await session.commit()
 
-    await analyzer.analyze(lead)
+    await analyzer.analyze(lead, raw)
 
     async with sessionmaker() as session:
         ai = await session.scalar(select(LeadAI).where(LeadAI.lead_id == lead.id))
@@ -104,12 +104,13 @@ async def test_lead_analyzer_idempotent(session, sessionmaker, monkeypatch):
     analyzer1 = LeadAnalyzer(llm1, prompt_version="v1")
     analyzer2 = LeadAnalyzer(llm2, prompt_version="v1")
 
-    lead = Lead(title="AI chatbot for support", description="Need an AI chatbot using GPT for customer support")
+    raw = RawItem(source_id="kwork_projects", title="Test title", content="Test description")
+    lead = Lead(raw_item_id=raw.id)
     session.add(lead)
     await session.commit()
 
-    await analyzer1.analyze(lead)
-    await analyzer2.analyze(lead)
+    await analyzer1.analyze(lead, raw)
+    await analyzer2.analyze(lead, raw)
 
     async with sessionmaker() as session:
         ai = await session.scalar(select(LeadAI).where(LeadAI.lead_id == lead.id))
@@ -130,8 +131,9 @@ async def test_lead_analyzer_invalid_json(session, sessionmaker, monkeypatch):
 
     analyzer = LeadAnalyzer(llm, prompt_version="v1")
 
-    lead = Lead(title="AI chatbot for support", description="Need an AI chatbot using GPT for customer support")
+    raw = RawItem(source_id="kwork_projects", title="Test title", content="Test description")
+    lead = Lead(raw_item_id=raw.id)
     session.add(lead)
     await session.commit()
 
-    assert await analyzer.analyze(lead) is False
+    assert await analyzer.analyze(lead, raw) is False

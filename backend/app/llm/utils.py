@@ -1,8 +1,5 @@
-from backend.app.llm.prompts.lead_analysis_v1 import LEAD_ANALYSIS_PROMPT_V1
-
-
-def render_messages(lead_description: str) -> list:
+def render_messages(lead_description: str, prompt: str) -> list:
     return [
-        {"role": "system", "content": LEAD_ANALYSIS_PROMPT_V1},
+        {"role": "system", "content": prompt},
         {"role": "user", "content": lead_description},
     ]

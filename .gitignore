@@ -189,6 +189,9 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
+# Telegram
+backend/.sessions/
+
 # -----------------------------------
 # FRONTEND (React + Vite + Node)
 # -----------------------------------

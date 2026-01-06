@@ -14,6 +14,9 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     libpq-dev \
     curl \
+    libxml2-dev \
+    libxslt1-dev \
+    gcc \
     && rm -rf /var/lib/apt/lists/*
 
 # Poetry
@@ -26,8 +29,8 @@ RUN poetry config virtualenvs.create false \
     && poetry install --no-root --no-interaction --no-ansi
 
 # Копируем проект
-COPY backend/app ./app
+COPY backend /app/backend
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "backend.app.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,21 +1,21 @@
-from uuid import uuid4
-
 from backend.app.db.models.user_rule import UserRule
 from backend.app.rules.engine import RuleEngine
 
 
-async def test_rule_min_score_pass(lead, lead_ai_good, session):
-    rule = UserRule(user_id=uuid4(), min_score=70)
-    session.add(rule)
+async def test_rule_min_score_pass(raw_item, user_lead, user, session):
+    rule = UserRule(user_id=user.id, min_score_for_notis=5, keywords_for_notis=["test"])
+    user_lead.score = 7
+    session.add(rule, user_lead)
     await session.flush()
     engine = RuleEngine([rule])
 
-    assert engine.match(lead, lead_ai_good) is True
+    assert engine.should_notify(raw_item, user_lead.score) is True
 
 
-async def test_rule_min_score_fail(lead, lead_ai_bad_score, session):
-    rule = UserRule(user_id=uuid4(), min_score=70)
-    session.add(rule)
+async def test_rule_min_score_fail(raw_item, user_lead, user, session):
+    rule = UserRule(user_id=user.id, min_score_for_notis=5, keywords_for_notis=["test"])
+    user_lead.score = 3
+    session.add(rule, user_lead)
     await session.flush()
     engine = RuleEngine(
         [
@@ -23,85 +23,73 @@ async def test_rule_min_score_fail(lead, lead_ai_bad_score, session):
         ]
     )
 
-    assert engine.match(lead, lead_ai_bad_score) is False
+    assert engine.should_notify(raw_item, user_lead.score) is False
 
 
-async def test_rule_category_pass(lead, lead_ai_good, session):
-    rule = UserRule(user_id=uuid4(), categories=["chatbot"])
+async def test_rule_include_keywords_pass(raw_item, user, session):
+    rule = UserRule(user_id=user.id, source_ids=["kwork_projects"], include_keywords=["test", "gpt"])
     session.add(rule)
     await session.flush()
     engine = RuleEngine([rule])
 
-    assert engine.match(lead, lead_ai_good) is True
+    assert engine.match(raw_item, "kwork_projects") == (True, 3)
 
 
-async def test_rule_category_fail(lead, lead_ai_wrong_category, session):
-    rule = UserRule(user_id=uuid4(), categories=["chatbot"])
+async def test_rule_include_keywords_fail(raw_item, user, session):
+    rule = UserRule(user_id=user.id, source_ids=["kwork_projects"], include_keywords=["voice"])
     session.add(rule)
     await session.flush()
     engine = RuleEngine([rule])
 
-    assert engine.match(lead, lead_ai_wrong_category) is False
+    assert engine.match(raw_item, "kwork_projects") == (False, 0)
 
 
-async def test_rule_include_keywords_pass(lead, lead_ai_good, session):
-    rule = UserRule(user_id=uuid4(), include_keywords=["chatbot", "gpt"])
+async def test_rule_exclude_keywords_pass(raw_item, user, session):
+    rule = UserRule(
+        user_id=user.id, source_ids=["kwork_projects"], exclude_keywords=["blockchain"], include_keywords=["test"]
+    )
     session.add(rule)
     await session.flush()
     engine = RuleEngine([rule])
 
-    assert engine.match(lead, lead_ai_good) is True
+    assert engine.match(raw_item, "kwork_projects") == (True, 3)
 
 
-async def test_rule_include_keywords_fail(lead, lead_ai_good, session):
-    rule = UserRule(user_id=uuid4(), include_keywords=["voice"])
+async def test_rule_exclude_keywords_fail(raw_item, user, session):
+    rule = UserRule(user_id=user.id, source_ids=["kwork_projects"], exclude_keywords=["test"])
     session.add(rule)
     await session.flush()
     engine = RuleEngine([rule])
 
-    assert engine.match(lead, lead_ai_good) is False
+    assert engine.match(raw_item, "kwork_projects") == (False, 0)
 
 
-async def test_rule_exclude_keywords_pass(lead, lead_ai_good, session):
-    rule = UserRule(user_id=uuid4(), exclude_keywords=["blockchain"])
+async def test_rule_combined_conditions_pass(raw_item, user, session):
+    rule = UserRule(
+        user_id=user.id, source_ids=["kwork_projects"], include_keywords=["test"], exclude_keywords=["gpt"]
+    )
     session.add(rule)
     await session.flush()
     engine = RuleEngine([rule])
 
-    assert engine.match(lead, lead_ai_good) is True
+    assert engine.match(raw_item, "kwork_projects") == (True, 3)
 
 
-async def test_rule_exclude_keywords_fail(lead, lead_ai_good, session):
-    rule = UserRule(user_id=uuid4(), exclude_keywords=["support"])
+async def test_rule_combined_conditions_fail(raw_item, user, session):
+    rule = UserRule(
+        user_id=user.id, source_ids=["kwork_projects"], include_keywords=["chatbot"], exclude_keywords=["test"]
+    )  # не проходит
     session.add(rule)
     await session.flush()
     engine = RuleEngine([rule])
 
-    assert engine.match(lead, lead_ai_good) is False
+    assert engine.match(raw_item, "kwork_projects") == (False, 0)
 
 
-async def test_rule_combined_conditions_pass(lead, lead_ai_good, session):
-    rule = UserRule(user_id=uuid4(), min_score=70, categories=["chatbot"], exclude_keywords=["gpt"])
+async def test_disabled_rule_is_ignored(raw_item, user, session):
+    rule = UserRule(user_id=user.id, source_ids=["kwork_projects"], include_keywords=["test"], enabled=False)
     session.add(rule)
     await session.flush()
     engine = RuleEngine([rule])
 
-    assert engine.match(lead, lead_ai_good) is True
-
-
-async def test_rule_combined_conditions_fail(lead, lead_ai_good, session):
-    rule = UserRule(user_id=uuid4(), min_score=90, categories=["chatbot"], include_keywords=["gpt"])  # не проходит
-    session.add(rule)
-    await session.flush()
-    engine = RuleEngine([rule])
-
-    assert engine.match(lead, lead_ai_good) is False
-
-
-async def test_disabled_rule_is_ignored(lead, lead_ai_bad_score, session):
-    rule = UserRule(user_id=uuid4(), min_score=100, enabled=False)
-    session.add(rule)
-    await session.flush()
-    engine = RuleEngine([rule])
-
-    assert engine.match(lead, lead_ai_bad_score) is True
+    assert engine.match(raw_item, "kwork_projects") == (True, 0)
