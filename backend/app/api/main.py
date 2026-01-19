@@ -3,7 +3,9 @@ import logging.config
 
 from starlette.middleware.cors import CORSMiddleware
 
+from backend.app.api.retry import wait_for_db
 from backend.app.api.routers import admin, auth, leads, raw_items, user_leads, user_rules
+from backend.app.db.init_db import init_models
 from backend.app.llm.registry import ClientRegistry
 from backend.app.logging_config import LOGGING_CONFIG
 from backend.app.sources.registry import SourceRegistry
@@ -31,6 +33,13 @@ app = FastAPI(
     title="Order hunter AI",
     version="0.1.0",
 )
+
+
+@app.on_event("startup")
+async def on_startup():
+    await wait_for_db()
+    await init_models()
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -62,4 +71,4 @@ async def startup():
 @app.on_event("shutdown")
 async def shutdown():
     scheduler.shutdown()
-    logger.info("STARTUP: scheduler started")
+    logger.info("SHUTDOWN: scheduler shutdown")

@@ -1,5 +1,5 @@
 from backend.app.sources.base import BaseSourceConnector
-from backend.app.sources.types import RawSourceItem
+from backend.app.sources.schema import RawSourceItem
 
 
 class DummySourceConnector(BaseSourceConnector):

@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import httpx
 
 from backend.app.sources.base import BaseSourceConnector
-from backend.app.sources.types import RawSourceItem
+from backend.app.sources.schema import RawSourceItem
 from backend.app.sources.user_agents import USER_AGENTS
 
 

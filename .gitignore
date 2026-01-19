@@ -191,6 +191,8 @@ cython_debug/
 
 # Telegram
 backend/.sessions/
+backend/desktop_session
+backend/desktop_session/tdata
 
 # -----------------------------------
 # FRONTEND (React + Vite + Node)

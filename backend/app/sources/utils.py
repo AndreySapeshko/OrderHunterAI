@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 from backend.app.db.crud import is_already_saved
-from backend.app.sources.types import RawSourceItem
+from backend.app.sources.schema import RawSourceItem
 
 logger = logging.getLogger(__name__)
 
