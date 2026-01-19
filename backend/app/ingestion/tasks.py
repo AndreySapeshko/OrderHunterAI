@@ -12,7 +12,11 @@ async def run_source_ingestion(source_id: str):
     connector_cls = SourceRegistry.get(source_id)
     connector = connector_cls(state=state)
     pipeline = IngestionPipeline(connector)
-    await pipeline.run()
+    try:
+        await pipeline.run()
+    finally:
+        if source_id == "telegram_channels":
+            await connector.stop()
 
 
 async def run_all_sources():

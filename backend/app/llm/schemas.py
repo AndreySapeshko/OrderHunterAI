@@ -11,7 +11,7 @@ class Budget(BaseModel):
 
 class Requirements(BaseModel):
     tech_stack: list[str] = Field(default_factory=list)
-    other: dict[str, str] = Field(default_factory=dict)
+    other: list[str] = Field(default_factory=dict)
 
 
 class LLMLeadResult(BaseModel):

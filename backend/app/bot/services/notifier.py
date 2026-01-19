@@ -15,12 +15,14 @@ async def notify_lead(lead_id: str, chat_id: int, raw: RawItem, score: int, lead
         f"{raw.content[:500]}\n\n"
         f"🤖 AI-анализ:\n\n"
         f"⭐ Score: {ai_score}/7\n\n"
-        f"✔️ Категория: {category}"
+        f"✔️ Категория: {category}\n"
+        f"Открыть заказ: {raw.url}"
     )
 
-    await bot.send_message(
-        chat_id=chat_id,
-        text=text,
-        reply_markup=lead_keyboard(str(lead_id)),
-        disable_web_page_preview=True,
-    )
+    if bot:
+        await bot.send_message(
+            chat_id=chat_id,
+            text=text,
+            reply_markup=lead_keyboard(str(lead_id)),
+            disable_web_page_preview=True,
+        )

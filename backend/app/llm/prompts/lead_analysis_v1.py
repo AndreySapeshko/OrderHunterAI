@@ -23,13 +23,45 @@ Rules:
 - Return ONLY valid JSON.
 - Do NOT include any explanations or extra text.
 
-Return JSON with EXACT fields:
-- is_relevant: boolean
-- relevance_reason: string
-- category: string
-- requirements: object
-- stack: array of strings
-- budget: object with fields min, max, currency OR null
-- deadline_days: integer OR null
-- score: integer from 0 to 100
+Return JSON with EXACT structure and types:
+
+{
+  "is_relevant": boolean,
+  "relevance_reason": string,
+  "category": string,
+  "requirements": {
+    "tech_stack": array of strings,
+    "other": array of strings
+  },
+  "stack": array of strings,
+  "budget": {
+    "min": number,
+    "max": number,
+    "currency": string
+  } OR null,
+  "deadline_days": number OR null,
+  "score": number
+}
+
+IMPORTANT:
+- requirements.tech_stack and requirements.other MUST be arrays.
+- If no requirements are mentioned, use empty arrays.
+- If budget is not clearly stated, return null.
+- score MUST be an integer between 0 and 100.
+
+Example response:
+
+{
+  "is_relevant": true,
+  "relevance_reason": "Project describes building an AI-powered chatbot for customer support.",
+  "category": "chatbot",
+  "requirements": {
+    "tech_stack": ["Python", "AsyncIO", "PostgreSQL", "PostgreSQL", "FastAPI", "Aiogram"],
+    "other": ["Telegram"]
+  },
+  "stack": ["Python", "LLM API"],
+  "budget": null,
+  "deadline_days": null,
+  "score": 72
+}
 """

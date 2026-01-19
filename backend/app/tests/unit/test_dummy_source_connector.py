@@ -1,8 +1,8 @@
 import pytest
 
 from backend.app.sources.connectors.dummy import DummySourceConnector
+from backend.app.sources.schema import RawSourceItem
 from backend.app.sources.state import SourceState
-from backend.app.sources.types import RawSourceItem
 
 
 @pytest.mark.asyncio

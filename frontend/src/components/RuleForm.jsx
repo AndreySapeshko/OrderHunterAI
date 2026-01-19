@@ -43,13 +43,13 @@ export default function RuleForm({ rule, onSaved, onCancel }) {
     }
 
     // режим редактирования
-    setSources(rule.source_ids ?? [])
+    setSources(rule.source_ids ?? []);
     setInclude(lines(rule.include_keywords));
     setExclude(lines(rule.exclude_keywords));
     setNotify(lines(rule.keywords_for_notis));
-    setMinText(rule.min_text_length ?? 0)
+    setMinText(rule.min_text_length ?? 0);
     setMinScore(rule.min_score ?? 0);
-    setNotifyScore(rule.min_score_for_notis ?? 0)
+    setNotifyScore(rule.min_score_for_notis ?? 0);
     setEnabled(rule.enabled ?? true);
   }, [rule]);
 
@@ -65,9 +65,7 @@ export default function RuleForm({ rule, onSaved, onCancel }) {
       enabled,
     };
 
-    const url = isEdit
-      ? `/api/user_rules/${rule.id}`
-      : "/api/user_rules/";
+    const url = isEdit ? `/api/user_rules/${rule.id}` : "/api/user_rules/";
 
     const method = isEdit ? "PATCH" : "POST";
 
@@ -93,9 +91,7 @@ export default function RuleForm({ rule, onSaved, onCancel }) {
 
   function toggleSource(src) {
     setSources((prev) =>
-      prev.includes(src)
-        ? prev.filter((s) => s !== src)
-        : [...prev, src]
+      prev.includes(src) ? prev.filter((s) => s !== src) : [...prev, src]
     );
   }
 
@@ -118,42 +114,75 @@ export default function RuleForm({ rule, onSaved, onCancel }) {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <label
+            htmlFor="includWords"
+            style={{ fontSize: 14, fontWeight: 500 }}
+          >
+            Include keywords
+          </label>
+          <textarea
+            id="includWords"
+            rows={6}
+            placeholder="Include keywords (one per line)"
+            value={include}
+            onChange={(e) => setInclude(e.target.value)}
+            style={{ width: "100%", marginTop: 6 }}
+          />
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <label
+            htmlFor="excludWords"
+            style={{ fontSize: 14, fontWeight: 500 }}
+          >
+            Exclude keywords
+          </label>
+          <textarea
+            id="excludWords"
+            rows={6}
+            placeholder="Exclude keywords (one per line)"
+            value={exclude}
+            onChange={(e) => setExclude(e.target.value)}
+            style={{ width: "100%", marginTop: 6 }}
+          />
+        </div>
+      </div>
+
+      <div style={{ marginTop: 12 }}>
+        <label htmlFor="notify" style={{ fontSize: 14, fontWeight: 500 }}>
+          Notify keywords
+        </label>
         <textarea
-          rows={6}
-          placeholder="Include keywords (one per line)"
-          value={include}
-          onChange={(e) => setInclude(e.target.value)}
-        />
-        <textarea
-          rows={6}
-          placeholder="Exclude keywords (one per line)"
-          value={exclude}
-          onChange={(e) => setExclude(e.target.value)}
+          id="notify"
+          rows={3}
+          placeholder="Notify keywords (optional)"
+          value={notify}
+          onChange={(e) => setNotify(e.target.value)}
+          style={{ width: "100%", marginTop: 6 }}
         />
       </div>
 
-      <textarea
-        rows={3}
-        placeholder="Notify keywords (optional)"
-        value={notify}
-        onChange={(e) => setNotify(e.target.value)}
-        style={{ width: "100%", marginTop: 12 }}
-      />
-
       <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
+        <label htmlFor="minText">Min text length</label>
         <input
+          id="minText"
           type="number"
           value={minText}
           onChange={(e) => setMinText(+e.target.value)}
           placeholder="Min text length"
         />
+        <label htmlFor="minScore">Min score</label>
         <input
+          id="minScore"
           type="number"
           value={minScore}
           onChange={(e) => setMinScore(+e.target.value)}
           placeholder="Min score"
         />
+        <label htmlFor="notifyScore">Notify score</label>
         <input
+          id="notifyScore"
           type="number"
           value={notifyScore}
           onChange={(e) => setNotifyScore(+e.target.value)}
