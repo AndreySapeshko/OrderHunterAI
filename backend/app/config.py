@@ -8,6 +8,7 @@ OPEN_AI_KEY = os.environ.get("OPEN_AI_KEY", default="my_api_key")
 OPEN_ROUTER_URL = os.environ.get("OPEN_ROUTER_URL", default="https://openrouter.ai/api/v1")
 OPEN_ROUTER_KEY = os.environ.get("OPEN_ROUTER_KEY", default="my_api_key")
 
+ENABLE_TELEGRAM = os.getenv("ENABLE_TELEGRAM", "false") == "true"
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", default="my_telegram_bot_token")
 TELEGRAM_API_ID = os.environ.get("TELEGRAM_API_ID", default="my_telegram_api_id")
 TELEGRAM_API_HASH = os.environ.get("TELEGRAM_API_HASH", default="my_telegram_api_hash")

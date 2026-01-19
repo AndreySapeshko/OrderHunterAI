@@ -19,9 +19,10 @@ async def notify_lead(lead_id: str, chat_id: int, raw: RawItem, score: int, lead
         f"Открыть заказ: {raw.url}"
     )
 
-    await bot.send_message(
-        chat_id=chat_id,
-        text=text,
-        reply_markup=lead_keyboard(str(lead_id)),
-        disable_web_page_preview=True,
-    )
+    if bot:
+        await bot.send_message(
+            chat_id=chat_id,
+            text=text,
+            reply_markup=lead_keyboard(str(lead_id)),
+            disable_web_page_preview=True,
+        )
