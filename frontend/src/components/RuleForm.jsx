@@ -65,6 +65,17 @@ export default function RuleForm({ rule, onSaved, onCancel }) {
       enabled,
     };
 
+    function resetForm() {
+      setSources([]);
+      setInclude("");
+      setExclude("");
+      setNotify("");
+      setMinText(200);
+      setMinScore(1);
+      setNotifyScore(3);
+      setEnabled(true);
+    }
+
     const url = isEdit ? `/api/user_rules/${rule.id}` : "/api/user_rules/";
 
     const method = isEdit ? "PATCH" : "POST";
@@ -84,6 +95,10 @@ export default function RuleForm({ rule, onSaved, onCancel }) {
       return;
     }
 
+    if (!isEdit) {
+      resetForm();
+    }
+
     onSaved();
   }
 
@@ -91,7 +106,7 @@ export default function RuleForm({ rule, onSaved, onCancel }) {
 
   function toggleSource(src) {
     setSources((prev) =>
-      prev.includes(src) ? prev.filter((s) => s !== src) : [...prev, src]
+      prev.includes(src) ? prev.filter((s) => s !== src) : [...prev, src],
     );
   }
 
