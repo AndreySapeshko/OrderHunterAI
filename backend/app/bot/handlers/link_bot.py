@@ -15,26 +15,29 @@ async def link_bot(message: Message, command: CommandObject):
         await message.answer("Укажите свой email в таком \n" "формате: /link example@example.com")
         return
     email = command.args.strip()
+    telegram_id = message.from_user.id
+    username = message.from_user.username
 
     async with async_session() as session:
-        telegram_id = message.from_user.id
-        username = message.from_user.username
         user = await get_user_by_email(email, session)
-        if user:
-            if not user.is_active:
-                return await message.answer(
-                    "Ваша регистрация еще не активирована.\n" " Дождитесь активации и попробуйте снова."
-                )
-            if user.chat_id:
-                return await message.answer("Ваш telegram уже подключен.")
-            user.chat_id = telegram_id
-            user.username = username
-            await session.commit()
+        if not user:
+            return await message.answer("Сначала пройдите регистрацию на сайте: https://my_site.com")
+
+        if not user.is_active:
             return await message.answer(
-                f"Ты успешно подключен.\n"
-                f"Твой ID: {user.chat_id}\n"
-                f"Имя: {user.username}\n"
-                "OrderHunterAI запущен. 🚀\n"
-                "Теперь ты будешь получать уведомления о заказах."
+                "Ваша регистрация еще не активирована.\n" " Дождитесь активации и попробуйте снова."
             )
-        return await message.answer("Сначала пройдите регистрацию на сайте: https://my_site.com")
+
+        if user.chat_id:
+            return await message.answer("Ваш telegram уже подключен.")
+
+        user.chat_id = telegram_id
+        user.username = username
+        await session.commit()
+        return await message.answer(
+            f"Ты успешно подключен.\n"
+            f"Твой ID: {user.chat_id}\n"
+            f"Имя: {user.username}\n"
+            "OrderHunterAI запущен. 🚀\n"
+            "Теперь ты будешь получать уведомления о заказах."
+        )

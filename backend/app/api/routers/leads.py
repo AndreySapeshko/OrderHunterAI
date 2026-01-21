@@ -59,8 +59,8 @@ async def update_lead_status(lead_id: UUID, payload: LeadStatusUpdate, session: 
             raise HTTPException(status_code=404, detail="Lead not found")
 
         lead.status = payload.status
+        session.add(lead)
         await session.commit()
-        await session.refresh(lead)
 
         # подтягиваем AI-данные
         stmt = select(Lead, LeadAI).outerjoin(LeadAI, LeadAI.lead_id == Lead.id).where(Lead.id == lead_id)
