@@ -33,14 +33,15 @@ async def main():
 
     setup_routers(dp, routers)
 
+    if not bot:
+        print("❌ DISABLED start bot")
+
     if bot:
         print("🤖 Bot service started")
         try:
             await dp.start_polling(bot)
         finally:
             await bot.session.close()
-    else:
-        print("❌ DISABLED start bot")
 
 
 def run():

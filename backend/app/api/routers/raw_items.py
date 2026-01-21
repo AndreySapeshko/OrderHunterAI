@@ -24,8 +24,4 @@ async def list_raw_items(
         result = await session.execute(stmt)
         raw_items = result.scalars().all()
 
-    items = []
-    for raw_item in raw_items:
-        items.append(RawItemListOut.from_orm(raw_item))
-
-    return items
+    return list(map(RawItemListOut.from_orm, raw_items))
